@@ -22,3 +22,6 @@ https://www.kaggle.com/wiki/RootMeanSquaredError
 Python code:
 from sklearn.metrics import mean_squared_error
 RMSE = mean_squared_error(y, y_pred)**0.5
+
+R:
+RMSE <- sqrt(mean((y-y_pred)^2))
