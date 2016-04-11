@@ -32,7 +32,13 @@ def process_load_data(filename):
     df['datetime'] = df.year_month_day + df.hour
 
     # drop and reorder columns
-    df = df[['datetime', 'zone_id', 'value']]
+    df = df[['datetime', 'zone_id', 'value']].copy()
+
+    # add weights
+    df['weight'] = 1
+    # increase weight on future predictions - where datetime > 2008-06-30 05:30
+    predictions_start_datetime = datetime(2008, 6, 30, 05, 30, 0)
+    df.loc[df['datetime'] > predictions_start_datetime, 'weight'] = 8
 
     return df
 
@@ -82,7 +88,7 @@ def main():
     X_train_df = load.merge(temp, on='datetime', how='left')
 
     print 'process load test data'
-    load_test = process_load_data(datafoldername+loadfilename_train)
+    load_test = process_load_data(datafoldername+loadfilename_test)
 
     # I don't think we should use test temp data for building or evaluating our models.
     # but if we decide to this code would incorporate it.
@@ -97,9 +103,9 @@ def main():
     X_test_df = load_test.merge(temp, on='datetime', how='left')
 
     print 'save train data'
-    X_train_df.to_csv(outputfoldername + 'train_processed.csv')
+    X_train_df.to_csv(outputfoldername + 'train_processed.csv', index=False, date_format='%Y-%m-%d %H:%M:%S')
 
     print 'save test data'
-    X_test_df.to_csv(outputfoldername + 'test_processed.csv')
+    X_test_df.to_csv(outputfoldername + 'test_processed.csv', index=False, date_format='%Y-%m-%d %H:%M:%S')
 
 if __name__ == "__main__": main()
