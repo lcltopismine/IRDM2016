@@ -122,7 +122,7 @@ def main():
     for i in range(1, 21):
         print 'zoneid = %s' % i
         subset = X_train_df[X_train_df.zone_id == i]
-        filename = 'load_history_processed_zone_%s.csv' % i
+        filename = 'train_processed_zone_%s.csv' % i
         subset.to_csv(outputfoldername + filename)
 
 if __name__ == "__main__": main()

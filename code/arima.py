@@ -134,7 +134,7 @@ def loadData(filename):
 
 if __name__ == '__main__':
     
-    data = pd.read_csv('load_history_processed_zone_1.csv', parse_dates='datetime', index_col='datetime')
+    data = pd.read_csv('../data/output/train_processed_zone_1.csv', parse_dates='datetime', index_col='datetime')
     ts = data["value"]
     subts = ts[:'2005-03-06']
     plt.plot(subts)
