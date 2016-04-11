@@ -10,6 +10,7 @@ loadfilename_train = 'Load_history.csv'
 tempfilename_train = 'temperature_history.csv'
 loadfilename_test = 'Load_solution.csv'
 tempfilename_test = 'temperature_solution.csv'
+outputfoldername = datafoldername+'output/'
 outputfilename_train = 'train_processed.csv'
 outputfilename_test = 'test_processed.csv'
 
@@ -96,9 +97,9 @@ def main():
     X_test_df = load_test.merge(temp_all, on='datetime', how='left')
 
     print 'save train data'
-    X_train_df.to_csv(datafoldername + 'train_processed.csv')
+    X_train_df.to_csv(outputfoldername + 'train_processed.csv')
 
     print 'save test data'
-    X_test_df.to_csv(datafoldername + 'test_processed.csv')
+    X_test_df.to_csv(outputfoldername + 'test_processed.csv')
 
 if __name__ == "__main__": main()
