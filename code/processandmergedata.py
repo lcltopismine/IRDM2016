@@ -78,27 +78,30 @@ def process_temp_data(filename):
 
     return dfpivot
 
-
 # Add categorical time variables
 def addTimeDateCategories(df):
     df['summer'] = df['datetime'].dt.month.isin(range(4, 10))
     df['hour'] = df['datetime'].dt.hour
     return df
 
-
 def main():
 
-    print 'process load training data'
+    print 'get load training data'
     load = process_load_data(datafoldername+loadfilename_train)
 
-    print 'process temp training data'
+    print 'get load test data'
+    load_test = process_load_data(datafoldername+loadfilename_test)
+
+    print 'get temp training data'
     temp = process_temp_data(datafoldername+tempfilename_train)
 
     print 'merge training load data with temp data'
     X_train_df = load.merge(temp, on='datetime', how='left')
 
-    print 'process load test data'
-    load_test = process_load_data(datafoldername+loadfilename_test)
+    print 'merge test load data with temps'
+    X_test_df = load_test.merge(temp, on='datetime', how='left')
+
+    print 'get holiday data'
 
     # I don't think we should use test temp data for building or evaluating our models.
     # but if we decide to this code would incorporate it.
@@ -109,8 +112,7 @@ def main():
     # print 'merge test load data with all temp data'
     # X_test_df = load_test.merge(temp_all, on='datetime', how='left')
 
-    print 'merge test load data with temps'
-    X_test_df = load_test.merge(temp, on='datetime', how='left')
+
 
     print 'save train data'
     X_train_df.to_csv(outputfoldername + 'train_processed.csv', index=False, date_format='%Y-%m-%d %H:%M:%S')
@@ -123,6 +125,6 @@ def main():
         print 'zoneid = %s' % i
         subset = X_train_df[X_train_df.zone_id == i]
         filename = 'train_processed_zone_%s.csv' % i
-        subset.to_csv(outputfoldername + filename)
+        subset.to_csv(outputfoldername + filename, index=False, date_format='%Y-%m-%d %H:%M:%S')
 
 if __name__ == "__main__": main()
