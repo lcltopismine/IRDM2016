@@ -78,23 +78,23 @@ def main():
     print 'process temp training data'
     temp = process_temp_data(datafoldername+tempfilename_train)
 
-    print 'merge training data'
+    print 'merge training load data with temp data'
     X_train_df = load.merge(temp, on='datetime', how='left')
-
 
     print 'process load test data'
     load_test = process_load_data(datafoldername+loadfilename_train)
 
-    print 'process temp test data'
-    temp_test = process_temp_data(datafoldername+tempfilename_train)
+    # I don't think we should use test temp data for building or evaluating our models.
+    # but if we decide to this code would incorporate it.
+    # print 'process temp test data'
+    # temp_test = process_temp_data(datafoldername+tempfilename_train)
+    # print 'concat temp train and test data'
+    # temp_all = pd.concat([temp, temp_test])
+    # print 'merge test load data with all temp data'
+    # X_test_df = load_test.merge(temp_all, on='datetime', how='left')
 
-    # Some of the temp data is already provided in training - need to merge from both.
-    # append temp data
-    print 'concat temp train and test data'
-    temp_all = pd.concat([temp, temp_test])
-
-    print 'merge test data'
-    X_test_df = load_test.merge(temp_all, on='datetime', how='left')
+    print 'merge test load data with temps'
+    X_test_df = load_test.merge(temp, on='datetime', how='left')
 
     print 'save train data'
     X_train_df.to_csv(outputfoldername + 'train_processed.csv')
