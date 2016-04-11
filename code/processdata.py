@@ -31,7 +31,6 @@ temphistory = buildDateTime(temphistory)
 # drop and reorder colums
 loadhistory = loadhistory[['datetime', 'zone_id', 'value']]
 temphistory = temphistory[['datetime', 'station_id', 'value']]
-loadhistory = loadhistory.sort_values(by=['zone_id', 'datetime'], ascending=[True, True])
 
 # Add categorical time variables
 def addTimeDateCategories(df):
@@ -46,9 +45,6 @@ temphistory = addTimeDateCategories(temphistory)
 # print temphistory
 
 # write out to csv
-for i in range(1,21):
-    subset = loadhistory[loadhistory.zone_id == i]
-    filename = 'load_history_processed_zone_%s.csv'%i
-    subset.to_csv(filename)
+loadhistory.to_csv(datafolder + 'load_history_processed.csv')
 temphistory.to_csv(datafolder + 'temperature_history_processed.csv')
 
