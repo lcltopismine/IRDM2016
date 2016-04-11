@@ -37,6 +37,9 @@ def process_load_data(filename):
     # drop and reorder columns
     df = df[['datetime', 'zone_id', 'value']].copy()
 
+    # sort data
+    df.sort_values(by=['zone_id', 'datetime'], ascending=[True, True])
+
     # add weights
     df['weight'] = 1
     # increase weight on future predictions - where datetime > 2008-06-30 05:30
@@ -63,6 +66,9 @@ def process_temp_data(filename):
     df['datetime'] = df.year_month_day + df.hour
 
     df = df[['datetime', 'station_id', 'value']]
+
+    # sort data
+    df.sort_values(by=['station_id', 'datetime'], ascending=[True, True])
 
     # pivot temps by station
     dfpivot = df.pivot(index='datetime', columns='station_id', values='value')
@@ -111,5 +117,12 @@ def main():
 
     print 'save test data'
     X_test_df.to_csv(outputfoldername + 'test_processed.csv', index=False, date_format='%Y-%m-%d %H:%M:%S')
+
+    print 'also save train data split by zoneid'
+    for i in range(1, 21):
+        print 'zoneid = %s' % i
+        subset = X_train_df[X_train_df.zone_id == i]
+        filename = 'load_history_processed_zone_%s.csv' % i
+        subset.to_csv(outputfoldername + filename)
 
 if __name__ == "__main__": main()
