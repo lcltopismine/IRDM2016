@@ -1,46 +1,50 @@
-import csv
-import pickle
+# interpreter: python 2.7
+
+import pandas as pd
+from datetime import datetime
+import numpy as np
 
 datafolder = '../data/'
 
-X = []
-y = []
-temperatures = []
-with open(datafolder + 'temperature_history.csv', 'r') as temp:
-    temperature_reader = csv.reader(temp, delimiter=',')  # read file
-    next(temperature_reader)  # skip header
-    for line in temperature_reader:
-        for i in range(1, 25):  # from each line 24 new training examples are generated (one for each hour)
-            if len(line[i+3]) == 0:  # skip empty fields
-                break
-            values = []
-            values.extend(int(line[j]) for j in range(4))  # id, year, month, day
-            values.append(i)  # hour
-            values.append(int(line[i+3]))  # temperature
-            temperatures.append(values)
+# import data
+loadhistory = pd.read_csv(datafolder + 'Load_history.csv', parse_dates=[[1, 2, 3]], thousands=',')
+temphistory = pd.read_csv(datafolder + 'temperature_history.csv', parse_dates=[[1, 2, 3]])
 
-with open(datafolder + 'Load_history.csv', 'r') as load:
-    load_reader = csv.reader(load, delimiter=',')  # read file
-    next(load_reader)  # skip header
-    count = 0
-    for line in load_reader:
-        for i in range(1, 25):  # from each line 24 new training examples are generated (one for each hour)
-            if len(line[i+3]) == 0:  # skip empty fields
-                break
-            features = []
-            features.extend(int(line[j]) for j in range(4))  # id, year, month, day
-            features.append(i)  # hour
-            for row in temperatures:  # append temperature values from all stations
-                if row[1] == features[1] and row[2] == features[2] and row[3] == features[3] and row[4] == features[4]:
-                    features.append(row[5])
-            X.append(features)  # add example to X matrix
-            y.append(int(line[i+3].replace(',', '')))  # add label to y vactor
-        if count % 1000 == 0:  # checking progress
-            print count
-        count += 1
-pickle.dump(X, open(datafolder + 'features.p', 'wb'))
-pickle.dump(y, open(datafolder + 'labels.p', 'wb'))
+# unpivot
+loadhistory=pd.melt(loadhistory, id_vars=['year_month_day', 'zone_id'], var_name='hour')
+temphistory=pd.melt(temphistory, id_vars=['year_month_day', 'station_id'], var_name='hour')
 
-# writer = csv.writer(open(datafolder + 'load.csv', 'w', newline=''), delimiter=',')
-# for i in range(len(X)):
-#     writer.writerow(X[i])
+# drop rows where value is NaN
+loadhistory.dropna(inplace=True)
+temphistory.dropna(inplace=True)
+
+# build datetime
+def buildDateTime(df):
+    df.hour = df.hour.str.replace('h', '')
+    df.hour = pd.to_timedelta(df.hour.astype(int) - 1, unit='h')
+    df['datetime'] = df.year_month_day + df.hour
+    return df
+
+loadhistory = buildDateTime(loadhistory)
+temphistory = buildDateTime(temphistory)
+
+# drop and reorder colums
+loadhistory = loadhistory[['datetime', 'zone_id', 'value']]
+temphistory = temphistory[['datetime', 'station_id', 'value']]
+
+# Add categorical time variables
+def addTimeDateCategories(df):
+    df['summer'] = df['datetime'].dt.month.isin(range(4, 10))
+    df['hour'] = df['datetime'].dt.hour
+    return df
+
+loadhistory = addTimeDateCategories(loadhistory)
+temphistory = addTimeDateCategories(temphistory)
+
+# print loadhistory
+# print temphistory
+
+# write out to csv
+loadhistory.to_csv(datafolder + 'load_history_processed.csv')
+temphistory.to_csv(datafolder + 'temperature_history_processed.csv')
+
