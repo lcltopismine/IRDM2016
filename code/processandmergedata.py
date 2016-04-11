@@ -10,6 +10,8 @@ loadfilename_train = 'Load_history.csv'
 tempfilename_train = 'temperature_history.csv'
 loadfilename_test = 'Load_solution.csv'
 tempfilename_test = 'temperature_solution.csv'
+outputfilename_train = 'train_processed.csv'
+outputfilename_test = 'test_processed.csv'
 
 
 def process_load_data(filename):
@@ -31,7 +33,6 @@ def process_load_data(filename):
     # drop and reorder columns
     df = df[['datetime', 'zone_id', 'value']]
 
-    print df
     return df
 
 
@@ -58,8 +59,6 @@ def process_temp_data(filename):
     dfpivot.rename(columns=lambda x: 'tempstn_'+str(x), inplace=True)
     dfpivot.reset_index(inplace=True)
 
-    print dfpivot
-
     return dfpivot
 
 
@@ -70,32 +69,36 @@ def addTimeDateCategories(df):
     return df
 
 
-def load_to_df(loadfilename, tempfilename):
-    load = process_load_data(loadfilename)
-    temp = process_temp_data(tempfilename)
-
-    df = load.merge(temp, on='datetime', how='left')
-
-    return df
-
-
 def main():
 
-    print 'load training data'
+    print 'process load training data'
     load = process_load_data(datafoldername+loadfilename_train)
+
+    print 'process temp training data'
     temp = process_temp_data(datafoldername+tempfilename_train)
+
+    print 'merge training data'
     X_train_df = load.merge(temp, on='datetime', how='left')
 
 
-    print 'load test data'
+    print 'process load test data'
     load_test = process_load_data(datafoldername+loadfilename_train)
+
+    print 'process temp test data'
     temp_test = process_temp_data(datafoldername+tempfilename_train)
 
-    # Todo: - Some of the temp data is already provided in training - need to merge from both.
-    X_test_df = load_test(temp_test, on='datetime', how='left')
+    # Some of the temp data is already provided in training - need to merge from both.
+    # append temp data
+    print 'concat temp train and test data'
+    temp_all = pd.concat([temp, temp_test])
 
-    # write out to csv
-    # loadhistory.to_csv(datafolder + 'load_history_processed.csv')
-    # temphistory.to_csv(datafolder + 'temperature_history_processed.csv')
+    print 'merge test data'
+    X_test_df = load_test.merge(temp_all, on='datetime', how='left')
+
+    print 'save train data'
+    X_train_df.to_csv(datafoldername + 'train_processed.csv')
+
+    print 'save test data'
+    X_test_df.to_csv(datafoldername + 'test_processed.csv')
 
 if __name__ == "__main__": main()
