@@ -26,6 +26,9 @@ def process_load_data(filename):
     # drop rows where value is NaN
     df.dropna(inplace=True)
 
+    # drop where zoneid = 21 [this is just a total row]
+    df = df[df.zone_id != 21]
+
     # create datetime col
     df.hour = df.hour.str.replace('h', '')
     df.hour = pd.to_timedelta(df.hour.astype(int) - 1, unit='h')
@@ -51,6 +54,7 @@ def process_temp_data(filename):
     # unpivot
     df = pd.melt(df, id_vars=['year_month_day', 'station_id'], var_name='hour')
 
+    # drop where value missing
     df.dropna(inplace=True)
 
     # create datetime col
