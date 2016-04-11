@@ -4,3 +4,4 @@
 *.log
 *.out
 .idea/
+data/output/
