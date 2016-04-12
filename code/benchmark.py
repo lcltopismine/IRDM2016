@@ -58,8 +58,7 @@ extract_and_onehot_datetimes = Pipeline([('extract_dt', ColumnExtractor(cols=[4,
                                          ('onehot_dt', OneHotEncoder())])
 
 # FeatureUnion for basic (unary) features
-base_features = FeatureUnion(transformer_list=[('weight', ColumnExtractor(cols=[1])),
-                                               ('trend', ColumnExtractor(cols=[2])),
+base_features = FeatureUnion(transformer_list=[('trend', ColumnExtractor(cols=[2])),
                                                ('temps', extract_and_scale_temps),
                                                ('onehots', extract_and_onehot_datetimes)])
 
@@ -81,11 +80,15 @@ for zone in range(1, zones+1):
         y_test = test[['value']]
 
         pipe.fit(X_train, y_train)
-        y_train_pred = pipe.predict(X_train)
-        y_test_pred = pipe.predict(X_test)
+        # y_train_pred = pipe.predict(X_train)
+        # y_test_pred = pipe.predict(X_test)
 
-        print 'evaluate training: %.3f in zone: %i for temperature station: %i' % (mean_squared_error(y_train, y_train_pred)**0.5, zone, tempstn)
-        print 'evaluate training: %.3f in zone: %i for temperature station: %i' % (mean_squared_error(y_test, y_test_pred)**0.5, zone, tempstn)
+        score_train = pipe.score(X_train, y_train)
+        score_test =  pipe.score(X_test, y_test)
+
+        print 'training R2 = %0.5f  test R2 = %0.5f  tempstn = %2i  zone = %2i' % (score_train, score_test, tempstn, zone)
+        # print 'evaluate training: %.3f in zone: %i for temperature station: %i' % (mean_squared_error(y_train, y_train_pred)**0.5, zone, tempstn)
+        # print 'evaluate test: %.3f in zone: %i for temperature station: %i' % (mean_squared_error(y_test, y_test_pred)**0.5, zone, tempstn)
 
 # NOTE1: this is RMSE not weighted RMSE.  need to incorporate additiona weighting on predictions and total over zones
 # NOTE2: this uses test set temperature data to predict for future period.  not sure if this should be available.
