@@ -13,7 +13,7 @@ train, test = get_data()
 print 'set up X and y'
 Xcols = ['tempstn_1', 'tempstn_2', 'tempstn_3', 'tempstn_4', 'tempstn_5', 'tempstn_6',
          'tempstn_7', 'tempstn_8', 'tempstn_9', 'tempstn_10', 'tempstn_11',
-         'holiday', 'summer', 'hour', 'dayofweek', 'month']
+         'holiday', 'summer', 'hour', 'dayofweek', 'month', 'trend', 'weight']
 X = train[Xcols].values
 y = train[['value']].values.flatten()
 X_test = test[Xcols].values

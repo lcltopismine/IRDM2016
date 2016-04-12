@@ -27,7 +27,7 @@ def selectdata(df, zone, tempstn):
     df['temp'] = df['tempstn_'+str(tempstn)]
 
     # filter to columns of interest
-    cols = ['value', 'trend', 'temp', 'month', 'dayofweek', 'hour']
+    cols = ['value', 'weight', 'trend', 'temp', 'month', 'dayofweek', 'hour']
     df = df[cols]
 
     return df
@@ -49,16 +49,17 @@ class ColumnExtractor(object):
         return self
 
 # Pipeline to scale temperatures
-extract_and_scale_temps = Pipeline([('extract_temps', ColumnExtractor(cols=[2])),
+extract_and_scale_temps = Pipeline([('extract_temps', ColumnExtractor(cols=[3])),
                                     ('scale_temps', StandardScaler()),
                                     ('poly_temps', PolynomialFeatures(3, include_bias=False))])
 
 # Pipeline to convert Month, Weekday, Hour to one-hot
-extract_and_onehot_datetimes = Pipeline([('extract_dt', ColumnExtractor(cols=[3, 4, 5])),
+extract_and_onehot_datetimes = Pipeline([('extract_dt', ColumnExtractor(cols=[4, 5, 6])),
                                          ('onehot_dt', OneHotEncoder())])
 
 # FeatureUnion for basic (unary) features
-base_features = FeatureUnion(transformer_list=[('trend', ColumnExtractor(cols=[1])),
+base_features = FeatureUnion(transformer_list=[('weight', ColumnExtractor(cols=[1])),
+                                               ('trend', ColumnExtractor(cols=[2])),
                                                ('temps', extract_and_scale_temps),
                                                ('onehots', extract_and_onehot_datetimes)])
 
