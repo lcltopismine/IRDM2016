@@ -19,8 +19,9 @@ y = train[['value']].values.flatten()
 X_test = test[Xcols].values
 y_test = test[['value']].values.flatten()
 
-estimators = 300
 # Fit regression model
+print 'fit gradient boosting regressor'
+estimators = 300
 clf = ensemble.GradientBoostingRegressor(n_estimators=estimators, max_depth=4, min_samples_split=1,
                                          learning_rate=0.01, loss='ls')
 
@@ -30,7 +31,7 @@ print 'RMSE train: %.3f, test: %.3f' % (
     mean_squared_error(y, clf.predict(X))**0.5,
     mean_squared_error(y_test, clf.predict(X_test))**0.5)
 
-# compute test set deviance
+# Compute test set deviance
 print 'compute deviance'
 test_score = np.zeros((estimators,), dtype=np.float64)
 
