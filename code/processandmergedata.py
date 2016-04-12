@@ -13,6 +13,7 @@ tempfilename_test = 'temperature_solution.csv'
 outputfoldername = datafoldername+'output/'
 outputfilename_train = 'train_processed.csv'
 outputfilename_test = 'test_processed.csv'
+holidayfilename = 'Holiday_Processed.csv'
 
 
 def process_load_data(filename):
@@ -72,13 +73,23 @@ def process_temp_data(filename):
 
     return dfpivot
 
-# Add categorical time variables
-def addTimeDateCategories(df):
-    df['summer'] = df['datetime'].dt.month.isin(range(4, 10))
-    df['hour'] = df['datetime'].dt.hour
+def process_holiday_data(filename):
+    df = pd.read_csv(filename, parse_dates=[0])
+    df['holiday']=1
+    df = df[['HolidayDate', 'holiday']]
+    df.columns = ['datetime', 'holiday']
     return df
 
-def main():
+
+# Add categorical time variables
+def add_timedate_categories(df):
+    df['summer'] = df['datetime'].dt.month.isin(range(4, 10))
+    df['hour'] = df['datetime'].dt.hour
+    df['dayofweek'] = df['datetime'].dt.weekday
+    df['month'] = df['datetime'].dt.month
+    return df
+
+def get_data():
 
     print 'get load training data'
     load = process_load_data(datafoldername+loadfilename_train)
@@ -89,6 +100,15 @@ def main():
     print 'get temp training data'
     temp = process_temp_data(datafoldername+tempfilename_train)
 
+    # I don't think we should use test temp data for building or evaluating our models.
+    # but if we decide to this code would incorporate it.
+
+    # print 'process temp test data'
+    # temp_test = process_temp_data(datafoldername+tempfilename_train)
+
+    # print 'concat temp train and test data'
+    # temp = pd.concat([temp, temp_test])
+
     print 'merge training load data with temp data'
     X_train_df = load.merge(temp, on='datetime', how='left')
 
@@ -96,29 +116,45 @@ def main():
     X_test_df = load_test.merge(temp, on='datetime', how='left')
 
     print 'get holiday data'
+    holidays = process_holiday_data(datafoldername+holidayfilename)
 
-    # I don't think we should use test temp data for building or evaluating our models.
-    # but if we decide to this code would incorporate it.
-    # print 'process temp test data'
-    # temp_test = process_temp_data(datafoldername+tempfilename_train)
-    # print 'concat temp train and test data'
-    # temp_all = pd.concat([temp, temp_test])
-    # print 'merge test load data with all temp data'
-    # X_test_df = load_test.merge(temp_all, on='datetime', how='left')
+    print 'merge holiday dates on train'
+    X_train_df = X_train_df.merge(holidays, on='datetime', how='left')
+    X_train_df['holiday'].fillna(0, inplace=True)
+
+    print 'merge holiday dates on test'
+    X_test_df = X_test_df.merge(holidays, on='datetime', how='left')
+    X_test_df['holiday'].fillna(0, inplace=True)
+
+    print 'add datetime categorical variables on train'
+    X_train_df = add_timedate_categories(X_train_df)
+
+    print 'add datetime categorical variables on test'
+    X_test_df = add_timedate_categories(X_test_df)
+
+    return X_train_df, X_test_df
 
 
+def save_data_csv(df, filename):
+    df.to_csv(filename, index=False, date_format='%Y-%m-%d %H:%M:%S')
+
+
+def main():
+
+    print 'get data'
+    X_train_df, X_test_df = get_data()
 
     print 'save train data'
-    X_train_df.to_csv(outputfoldername + 'train_processed.csv', index=False, date_format='%Y-%m-%d %H:%M:%S')
+    save_data_csv(X_train_df, outputfoldername + 'train_processed.csv')
 
     print 'save test data'
-    X_test_df.to_csv(outputfoldername + 'test_processed.csv', index=False, date_format='%Y-%m-%d %H:%M:%S')
+    save_data_csv(X_test_df, outputfoldername + 'test_processed.csv')
 
     print 'also save train data split by zoneid'
     for i in range(1, 21):
         print 'zoneid = %s' % i
         subset = X_train_df[X_train_df.zone_id == i]
         filename = 'train_processed_zone_%s.csv' % i
-        subset.to_csv(outputfoldername + filename, index=False, date_format='%Y-%m-%d %H:%M:%S')
+        save_data_csv(subset, outputfoldername + filename)
 
 if __name__ == "__main__": main()
