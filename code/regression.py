@@ -10,9 +10,15 @@ from processandmergedata import *
 print 'import data and create features'
 train, test = get_data()
 
+# filter to one zone.
+# zone = 1
+# train = train[train.zone_id == zone]
+# test = test[test.zone_id == zone]
+
 print 'set up X and y'
 Xcols = ['tempstn_1', 'tempstn_2', 'tempstn_3', 'tempstn_4', 'tempstn_5', 'tempstn_6',
          'tempstn_7', 'tempstn_8', 'tempstn_9', 'tempstn_10', 'tempstn_11']
+         # 'holiday', 'summer', 'hour', 'dayofweek', 'month']
 X = train[Xcols].values
 y = train[['value']]
 X_test = test[Xcols].values
