@@ -44,6 +44,10 @@ def process_load_data(filename):
     predictions_start_datetime = datetime(2008, 6, 30, 05, 30, 0)
     df.loc[df['datetime'] > predictions_start_datetime, 'weight'] = 8
 
+    # add trend variable [incremental number of hours]
+    trend_start_datetime = datetime(2004, 1, 1, 0, 0, 0)
+    df['trend'] = (df.datetime - trend_start_datetime) / np.timedelta64(1, 'h') + 1
+
     return df
 
 
