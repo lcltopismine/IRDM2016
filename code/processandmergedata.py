@@ -100,14 +100,14 @@ def get_data():
     print 'get temp training data'
     temp = process_temp_data(datafoldername+tempfilename_train)
 
-    # I don't think we should use test temp data for building or evaluating our models.
-    # but if we decide to this code would incorporate it.
+    # I'm not sure if we should use test temp data for building or evaluating our models.
+    # but incorporated for now.
 
-    # print 'process temp test data'
-    # temp_test = process_temp_data(datafoldername+tempfilename_train)
+    print 'process temp test data'
+    temp_test = process_temp_data(datafoldername+tempfilename_test)
 
-    # print 'concat temp train and test data'
-    # temp = pd.concat([temp, temp_test])
+    print 'concat temp train and test data'
+    temp = pd.concat([temp, temp_test])
 
     print 'merge training load data with temp data'
     X_train_df = load.merge(temp, on='datetime', how='left')
