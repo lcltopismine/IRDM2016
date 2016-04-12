@@ -26,7 +26,7 @@ clf = ensemble.GradientBoostingRegressor(n_estimators=estimators, max_depth=4, m
 
 clf.fit(X, y)
 
-print 'MSE train: %.3f, test: %.3f' % (
+print 'RMSE train: %.3f, test: %.3f' % (
     mean_squared_error(y, clf.predict(X))**0.5,
     mean_squared_error(y_test, clf.predict(X_test))**0.5)
 
