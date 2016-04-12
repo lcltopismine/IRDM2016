@@ -13,11 +13,11 @@ from sklearn.base import BaseEstimator
 from processandmergedata import *
 
 print 'import data and create features'
-train, test = get_data()
+train_data, test_data = get_data()
 
 # filter to one zone and one temp station
-zone = 1
-tempstn = 1
+zones = 20
+tempstns = 11
 
 def selectdata(df, zone, tempstn):
     # filter by zone
@@ -31,14 +31,6 @@ def selectdata(df, zone, tempstn):
     df = df[cols]
 
     return df
-
-train = selectdata(train, zone, tempstn)
-test = selectdata(test, zone, tempstn)
-
-X_train = train.values
-X_test = test.values
-y_train = train[['value']]
-y_test = test[['value']]
 
 # preprocessing
 
@@ -77,12 +69,22 @@ pipe = Pipeline([('base_features', base_features),
                  ('linreg', LinearRegression())])
 
 
-pipe.fit(X_train, y_train)
-y_train_pred = pipe.predict(X_train)
-y_test_pred = pipe.predict(X_test)
+for zone in range(1, zones+1):
+    for tempstn in range(1, tempstns+1):
+        train = selectdata(train_data, zone, tempstn)
+        test = selectdata(test_data, zone, tempstn)
 
-print 'evaluate training: %.3f' % mean_squared_error(y_train, y_train_pred)**0.5
-print 'evaluate training: %.3f' % mean_squared_error(y_test, y_test_pred)**0.5
+        X_train = train.values
+        X_test = test.values
+        y_train = train[['value']]
+        y_test = test[['value']]
+
+        pipe.fit(X_train, y_train)
+        y_train_pred = pipe.predict(X_train)
+        y_test_pred = pipe.predict(X_test)
+
+        print 'evaluate training: %.3f in zone: %i for temperature station: %i' % (mean_squared_error(y_train, y_train_pred)**0.5, zone, tempstn)
+        print 'evaluate training: %.3f in zone: %i for temperature station: %i' % (mean_squared_error(y_test, y_test_pred)**0.5, zone, tempstn)
 
 # NOTE1: this is RMSE not weighted RMSE.  need to incorporate additiona weighting on predictions and total over zones
 # NOTE2: this uses test set temperature data to predict for future period.  not sure if this should be available.
