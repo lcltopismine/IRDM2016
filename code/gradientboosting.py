@@ -19,7 +19,7 @@ y = train[['value']].values.flatten()
 X_test = test[Xcols].values
 y_test = test[['value']].values.flatten()
 
-estimators = 500
+estimators = 300
 # Fit regression model
 clf = ensemble.GradientBoostingRegressor(n_estimators=estimators, max_depth=4, min_samples_split=1,
                                          learning_rate=0.01, loss='ls')
@@ -31,6 +31,7 @@ print 'MSE train: %.3f, test: %.3f' % (
     mean_squared_error(y_test, clf.predict(X_test))**0.5)
 
 # compute test set deviance
+print 'compute deviance'
 test_score = np.zeros((estimators,), dtype=np.float64)
 
 for i, y_pred in enumerate(clf.staged_predict(X_test)):
@@ -49,14 +50,16 @@ plt.xlabel('Boosting Iterations')
 plt.ylabel('Deviance')
 
 # Plot feature importance
-# feature_importance = clf.feature_importances_
-# # make importances relative to max importance
-# feature_importance = 100.0 * (feature_importance / feature_importance.max())
-# sorted_idx = np.argsort(feature_importance)
-# pos = np.arange(sorted_idx.shape[0]) + .5
-# plt.subplot(1, 2, 2)
-# plt.barh(pos, feature_importance[sorted_idx], align='center')
-# plt.yticks(pos, Xcols[sorted_idx])
-# plt.xlabel('Relative Importance')
-# plt.title('Variable Importance')
-# plt.show()
+print 'measure feature importance'
+feature_importance = clf.feature_importances_
+# make importances relative to max importance
+feature_importance = 100.0 * (feature_importance / feature_importance.max())
+sorted_idx = np.argsort(feature_importance)
+pos = np.arange(sorted_idx.shape[0]) + .5
+plt.subplot(1, 2, 2)
+plt.barh(pos, feature_importance[sorted_idx], align='center')
+names = [Xcols[i].replace('dayofweek', 'weekday').replace('tempstn_', 'station') for i in sorted_idx]
+plt.yticks(pos, names)
+plt.xlabel('Relative Importance')
+plt.title('Variable Importance')
+plt.show()
