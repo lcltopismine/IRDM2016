@@ -15,8 +15,8 @@ def test_stationarity(ts):
     
     #Determing rolling statistics
 
-    rolmean = ts.rolling(window=12,center=False).mean()
-    rolstd = ts.rolling(window=12,center=False).std()
+    rolmean = ts.rolling(window=24,center=False).mean()
+    rolstd = ts.rolling(window=24,center=False).std()
     
     #Plot rolling statistics:
     orig = plt.plot(ts, color='blue',label='Original')
@@ -61,8 +61,8 @@ def decompose(ts_log):
 def difference(ts_log):
     ts_log_diff = ts_log - ts_log.shift()
     ts_log_diff.dropna(inplace=True)
-    plt.plot(ts_log_diff)    
-    plt.show()
+    #plt.plot(ts_log_diff)    
+    #plt.show()
     return ts_log_diff
 
 #Plot the ACF and PACF on the differenced values in order the determine the ARIMA parameters (p,q)    
@@ -89,7 +89,7 @@ def plotACFandPACF(ts_log_diff):
     plt.show()
 
 #Perform ARIMA predictions, get the predictions back to scale and plots the results    
-def arima(ts_log,p,q,start,end):
+def arima(subts,p,q,start,end):
     
     ts_log = np.log(subts) 
     ts_log_diff = difference(ts_log)
@@ -128,19 +128,33 @@ def arima(ts_log,p,q,start,end):
     plt.title('RMSE: %.4f'% np.sqrt(sum((predictions_ARIMA-subts)**2)/len(subts)))  
     plt.show()
     
-def loadData(filename):    
-   # TODO
-    return null
 
 if __name__ == '__main__':
     
-    data = pd.read_csv('../data/output/train_processed_zone_1.csv', parse_dates='datetime', index_col='datetime')
-    ts = data["value"]
-    subts = ts[:'2005-03-06']
-    plt.plot(subts)
-    plt.show()
-    ts_log = np.log(subts)   
-    ts_log_diff = difference(ts_log)
-    test_stationarity(ts_log_diff)
-    plotACFandPACF(ts_log_diff)
-    arima(subts,1,2,'2005-03-06 00:00:00','2005-03-12 23:00:00')    
+    missingRanges = [['2005-03-06 00:00:00','2005-03-12 23:00:00'],['2005-06-20 00:00:00','2005-06-26 23:00:00'],
+                     ['2005-09-10 00:00:00','2005-09-10 23:00:00'],['2005-12-25 00:00:00','2005-12-31 23:00:00'],
+                     ['2006-02-13 00:00:00','2006-02-19 23:00:00'],['2006-05-25 00:00:00','2006-05-31 23:00:00'],
+                     ['2006-08-02 00:00:00','2006-08-08 23:00:00'],['2006-11-22 00:00:00','2006-11-28 23:00:00'],
+                     ['2008-06-30 06:00:00','2008-07-07 23:00:00']]
+    
+    for j in range(1,21):
+        
+        data = pd.read_csv('../data/output/train_processed_zone_%s.csv'%j, parse_dates='datetime', index_col='datetime')
+        ts = data["value"]        
+        print 'Predictions for zone %s'%j
+        
+        for i in range(0,9):
+            print 'Predicitons for %s to %s'%(missingRanges[i][0],missingRanges[i][1]) 
+            
+            if i == 0:
+                subts = ts[:'2005-03-06']
+            else:
+                subts = ts[missingRanges[i-1][1]:missingRanges[i][0]]
+                
+            plt.plot(subts)
+            plt.show()
+            ts_log = np.log(subts)   
+            ts_log_diff = difference(ts_log)
+            test_stationarity(ts_log_diff)
+            plotACFandPACF(ts_log_diff)
+            results = arima(subts,1,2,missingRanges[i][0],missingRanges[i][1])       
