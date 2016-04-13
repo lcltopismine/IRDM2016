@@ -1,9 +1,11 @@
 import pandas as pd
 from datetime import datetime
 import numpy as np
+import scipy.sparse as sparse
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import FunctionTransformer
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 from sklearn.pipeline import Pipeline, FeatureUnion
@@ -32,40 +34,86 @@ def selectdata(df, zone, tempstn):
 
     return df
 
-# preprocessing
+# preprocessing transformers
 
-class ColumnExtractor(object):
+# from initial X [dense]
+def get_trend_col(X):
+    return X[:, 2].reshape((-1,1))
 
-    def __init__(self, cols):
-        self.cols = cols
+def get_temp_col(X):
+    return X[:, 3].reshape((-1,1))
 
-    def transform(self, X):
-        col_list = []
-        for c in self.cols:
-            col_list.append(X[:, c:c+1])
-        return np.concatenate(col_list, axis=1)
+def get_dt_cols(X):
+    return X[:, 4:7]
 
-    def fit(self, X, y=None):
-        return self
+# from 1st round processed X [sparse]
+def get_temp_and_dt_onehot_cols(X):
+    X=X.tocsc()
+    a = X[:, 1]
+    b = X[:, 4:]
+    return sparse.hstack([a,b])
+
+def get_temp2_and_dt_onehot_cols(X):
+    X=X.tocsc()
+    a = X[:, 2]
+    b = X[:, 4:]
+    return sparse.hstack([a,b])
+
+def get_temp3_and_dt_onehot_cols(X):
+    X=X.tocsc()
+    a = X[:, 3]
+    b = X[:, 4:]
+    return sparse.hstack([a,b])
+
+def multiply_first_col_by_rest(X):
+    if sparse.isspmatrix(X):
+        X=X.tocsc()
+        first = X[:, 0]
+        rest = X[:, 1:]
+        res = first.multiply(rest)
+        res.tocoo()
+    else:
+        first = X[:,0].reshape(-1, 1)
+        rest = X[:, 1:]
+        res = first * rest
+    return res
+
+def pass_through(X):
+    return X
 
 # Pipeline to scale temperatures
-extract_and_scale_temps = Pipeline([('extract_temps', ColumnExtractor(cols=[3])),
+extract_and_scale_temps = Pipeline([('extract_temps', FunctionTransformer(get_temp_col, accept_sparse=True)),
                                     ('scale_temps', StandardScaler()),
                                     ('poly_temps', PolynomialFeatures(3, include_bias=False))])
 
 # Pipeline to convert Month, Weekday, Hour to one-hot
-extract_and_onehot_datetimes = Pipeline([('extract_dt', ColumnExtractor(cols=[4, 5, 6])),
+extract_and_onehot_datetimes = Pipeline([('extract_dt', FunctionTransformer(get_dt_cols, accept_sparse=True)),
                                          ('onehot_dt', OneHotEncoder())])
 
 # FeatureUnion for basic (unary) features
-base_features = FeatureUnion(transformer_list=[('trend', ColumnExtractor(cols=[2])),
+base_features = FeatureUnion(transformer_list=[('trend', FunctionTransformer(get_trend_col, accept_sparse=True)),
                                                ('temps', extract_and_scale_temps),
                                                ('onehots', extract_and_onehot_datetimes)])
 
-# TODO: how to generate the cross-effect terms - month * temp, hour * temp^2 etc.??
+# Pipeline to create temp * [Month, Weekday, Hour] features
+temp_by_datetime_features = Pipeline([('extract_temp_dt', FunctionTransformer(get_temp_and_dt_onehot_cols, accept_sparse=True)),
+                                      ('tempbydt', FunctionTransformer(multiply_first_col_by_rest, accept_sparse=True))])
+# Pipeline to create temp * [Month, Weekday, Hour] features
+temp2_by_datetime_features = Pipeline([('extract_temp_dt', FunctionTransformer(get_temp2_and_dt_onehot_cols, accept_sparse=True)),
+                                      ('tempbydt', FunctionTransformer(multiply_first_col_by_rest, accept_sparse=True))])
+# Pipeline to create temp * [Month, Weekday, Hour] features
+temp3_by_datetime_features = Pipeline([('extract_temp_dt', FunctionTransformer(get_temp3_and_dt_onehot_cols, accept_sparse=True)),
+                                      ('tempbydt', FunctionTransformer(multiply_first_col_by_rest, accept_sparse=True))])
+
+# FeatureUnion for cross-features
+cross_features = FeatureUnion(transformer_list=[('passthrough', FunctionTransformer(pass_through, accept_sparse=True)),
+                                                ('cross1', temp_by_datetime_features),
+                                                ('cross2', temp2_by_datetime_features),
+                                                ('cross3', temp3_by_datetime_features)])
 
 # Pipeline
 pipe = Pipeline([('base_features', base_features),
+                 ('cross_features', cross_features),
                  ('linreg', LinearRegression())])
 
 
