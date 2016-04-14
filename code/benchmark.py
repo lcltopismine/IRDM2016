@@ -27,7 +27,6 @@ def main():
 
     n_features = 5
 
-
     # BUILD MODEL PIPELINE - this replicates Tao Hong's benchmark model
     # http://repository.lib.ncsu.edu/ir/bitstream/1840.16/6457/1/etd.pdf - page 90
 
@@ -78,10 +77,13 @@ def main():
                      ('cross_features', cross_features),
                      ('linreg', LinearRegression())])
 
-
     # Run each zone/tempstation combo through pipeline and store best results on training data
     best_tempstn_for_zone = {}
     best_R2score_for_zone = {}
+
+    feat_names = ['Trend', 'Month', 'DayxHour', 'TxMonthHour', 'T2xMonthHour', 'T3xMonthHour']
+    n_per_feat = np.array([1, 12, 168, 36, 36, 36])
+    feat_imp = np.zeros(len(feat_names))
 
     for zone in range(1, zones+1):
         best_tempstn_for_zone[zone] = 0.
@@ -94,6 +96,11 @@ def main():
 
             pipe.fit(X_train, y_train)
 
+            regressor = pipe.named_steps['linreg']
+            coef = np.transpose(np.absolute(regressor.coef_))
+
+            feat_imp = feat_imp + [sum(coef[:1])[0], sum(coef[1:13])[0], sum(coef[13:181])[0], sum(coef[181:217])[0], sum(coef[217:253])[0], sum(coef[253:289])[0]] / n_per_feat
+
             score_train = pipe.score(X_train, y_train)
 
             # record best temperature station for this zone
@@ -103,6 +110,19 @@ def main():
 
             print 'zone = %2i  tempstn = %2i  training R2 = %0.5f' % (zone, tempstn, score_train)
 
+    # measure feature importance
+    print 'Measuring feature importance'
+    feat_imp = feat_imp / (zones*tempstns)
+    feat_imp = 100.0 * (feat_imp / feat_imp.max())
+    sorted_idx = np.argsort(feat_imp)
+    pos = np.arange(sorted_idx.shape[0]) + .5
+    plt.figure()
+    plt.barh(pos, feat_imp[sorted_idx], align='center')
+    features = [feat_names[i] for i in sorted_idx]
+    plt.yticks(pos, features)
+    plt.xlabel('Relative Importance')
+    plt.title('Variable Importance')
+    plt.show()
 
     print 'rerunning best models on test data:'
 
@@ -140,7 +160,7 @@ def main():
 
     # measure feature importance
     print 'Measuring feature importance'
-    feature_importance = feature_importance / (zones*tempstns)
+    feature_importance = feature_importance / zones
     feature_importance = 100.0 * (feature_importance / feature_importance.max())
     sorted_idx = np.argsort(feature_importance)
     pos = np.arange(sorted_idx.shape[0]) + .5
@@ -222,7 +242,7 @@ def multiply_first_col_by_rest(X):
 def pass_through(X):
     X = X.tocsc()
     trend = X[:, 0]
-    months = X[:, 6:19]
+    months = X[:, 6:18]
     return sparse.hstack([trend, months])
 
 
