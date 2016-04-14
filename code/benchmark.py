@@ -2,6 +2,8 @@ import pandas as pd
 from datetime import datetime
 import numpy as np
 import scipy.sparse as sparse
+import matplotlib.pyplot as plt
+from sklearn.feature_selection import f_regression
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import PolynomialFeatures
@@ -19,6 +21,8 @@ def main():
     # counts of zones and temperature stations - for looping
     zones = 20
     tempstns = 11
+
+    n_features = 5
 
 
     # BUILD MODEL PIPELINE - this replicates Tao Hong's benchmark model
@@ -103,6 +107,8 @@ def main():
     zoneresults = test_data[['datetime', 'zone_id', 'weight', 'value']].copy()
     zoneresults['prediction'] = 0
 
+    feature_importance = np.zeros(n_features)
+
     for zone in best_tempstn_for_zone:
 
         train = selectdata(train_data, zone, best_tempstn_for_zone[zone])
@@ -112,6 +118,9 @@ def main():
         test = selectdata(test_data, zone, best_tempstn_for_zone[zone])
         X_test = test.iloc[:, 1:].values
         y_test = test[['value']]
+
+        F, _ = f_regression(X_train, y_train.values.ravel())
+        feature_importance = feature_importance + F
 
         pipe.fit(X_train, y_train)
 
@@ -142,6 +151,19 @@ def main():
 
     print 'Weighted Root Mean Square Error: %.5f' % WRMS
 
+    # measure feature importance
+    print 'Measuring feature importance'
+    feature_importance = feature_importance / (zones*tempstns)
+    feature_importance = 100.0 * (feature_importance / feature_importance.max())
+    sorted_idx = np.argsort(feature_importance)
+    pos = np.arange(sorted_idx.shape[0]) + .5
+    plt.figure()
+    plt.barh(pos, feature_importance[sorted_idx], align='center')
+    features = [train.iloc[:, 1:].columns.values[i] for i in sorted_idx]
+    plt.yticks(pos, features)
+    plt.xlabel('Relative Importance')
+    plt.title('Variable Importance')
+    plt.show()
 
 # extract required data from dataframe
 def selectdata(df, zone, tempstn):
