@@ -5,6 +5,7 @@ from sklearn import ensemble
 from sklearn.metrics import mean_squared_error
 
 from processandmergedata import *
+from wrmse import WRMSE
 
 print 'import data and create features'
 train, test = get_data()
@@ -30,6 +31,11 @@ clf.fit(X, y)
 print 'RMSE train: %.3f, test: %.3f' % (
     mean_squared_error(y, clf.predict(X))**0.5,
     mean_squared_error(y_test, clf.predict(X_test))**0.5)
+
+# calculate weighted error
+zoneresults = test[['datetime', 'zone_id', 'weight', 'value']].copy()
+zoneresults['prediction'] = clf.predict(X_test)
+print 'Weighted Root Mean Square Error (including system level), test: %.5f' % WRMSE(zoneresults)
 
 # Compute test set deviance
 print 'compute deviance'

@@ -10,8 +10,11 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.metrics import mean_squared_error
+
 
 from processandmergedata import *
+from wrmse import WRMSE
 
 
 def main():
@@ -132,24 +135,8 @@ def main():
 
         print 'zone = %2i  tempstn = %2i  test R2 = %0.5f' % (zone, tempstn, score_test)
 
-    # calculate errors - system results are just sum over all zones.
-    zoneresults['error'] = zoneresults.value - zoneresults.prediction
-    sysresults = zoneresults.groupby('datetime')[['weight', 'error']].sum()
-
-    # calculate square errors
-    zoneresults['square_error'] = zoneresults.error ** 2
-    sysresults['square_error'] = sysresults.error ** 2
-
-    # apply weights
-    zoneresults['weighted_square_error'] = zoneresults.weight * zoneresults.square_error
-    sysresults['weighted_square_error'] = sysresults.weight * sysresults.square_error
-
-    # calculate WRMS
-    total_weighted_square_error = zoneresults.weighted_square_error.sum() + sysresults.weighted_square_error.sum()
-    total_weights = zoneresults.weight.sum() + sysresults.weight.sum()
-    WRMS = (total_weighted_square_error / total_weights) ** 0.5
-
-    print 'Weighted Root Mean Square Error: %.5f' % WRMS
+    print 'Root Mean Square Error (zone level only), test: %.5f' % mean_squared_error(zoneresults.value, zoneresults.prediction)**0.5
+    print 'Weighted Root Mean Square Error (including system level), test: %.5f' % WRMSE(zoneresults)
 
     # measure feature importance
     print 'Measuring feature importance'
