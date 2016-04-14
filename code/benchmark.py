@@ -199,6 +199,7 @@ def get_dayhour(X):
     day = X[:, 1]
     hour = X[:, 2]
     dayhour = 24 * day + hour
+    # return as dense (required by subsequent OneHot transformer)
     return dayhour.todense()
 
 def get_temp_and_mh_onehot_cols(X):
@@ -235,7 +236,7 @@ def pass_through(X):
     X = X.tocsc()
     trend = X[:, 0]
     months = X[:, 6:19]
-    return X
+    return sparse.hstack([trend, months])
 
 
 if __name__ == "__main__": main()
