@@ -106,18 +106,29 @@ def get_data():
 
     # I'm not sure if we should use test temp data for building or evaluating our models.
     # but incorporated for now.
-
-    print 'process temp test data'
-    temp_test = process_temp_data(datafoldername+tempfilename_test)
-
-    print 'concat temp train and test data'
-    temp = pd.concat([temp, temp_test])
+    # print 'process temp test data'
+    # temp_test = process_temp_data(datafoldername+tempfilename_test)
+    # print 'concat temp train and test data'
+    # temp = pd.concat([temp, temp_test])
 
     print 'merge training load data with temp data'
     X_train_df = load.merge(temp, on='datetime', how='left')
 
     print 'merge test load data with temps'
     X_test_df = load_test.merge(temp, on='datetime', how='left')
+
+    print 'estimate missing temps'
+    missingtemp = X_test_df[X_test_df.isnull().any(axis=1)][['datetime', 'zone_id']].copy()
+    missingtemp['month_day_hour'] = zip(missingtemp.datetime.dt.month,
+                                        missingtemp.datetime.dt.day,
+                                        missingtemp.datetime.dt.hour)
+    avgtemps = get_mean_temps(temp)
+    missingtemp = missingtemp.merge(avgtemps, left_on='month_day_hour', right_index=True, how='left')
+
+    X_test_df.set_index(['datetime', 'zone_id'], inplace=True)
+    missingtemp.set_index(['datetime', 'zone_id'], inplace=True)
+    X_test_df.update(missingtemp)
+    X_test_df.reset_index(inplace=True)
 
     print 'get holiday data'
     holidays = process_holiday_data(datafoldername+holidayfilename)
@@ -142,6 +153,11 @@ def get_data():
 def save_data_csv(df, filename):
     df.to_csv(filename, index=False, date_format='%Y-%m-%d %H:%M:%S')
 
+def get_mean_temps(temp):
+    temp.set_index(['datetime'], inplace=True)
+    day_hour_means = temp.groupby(lambda x: (x.month, x.day, x.hour)).mean()
+    return day_hour_means
+
 
 def main():
 
@@ -161,4 +177,8 @@ def main():
         filename = 'train_processed_zone_%s.csv' % i
         save_data_csv(subset, outputfoldername + filename)
 
-if __name__ == "__main__": main()
+    print 'save processed temperature data'
+    temp = process_temp_data(datafoldername+tempfilename_train)
+    save_data_csv(temp, outputfoldername + 'tempdata_processed.csv')
+
+if __name__ == "__main__":  main()
