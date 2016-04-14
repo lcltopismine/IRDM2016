@@ -6,6 +6,9 @@ import matplotlib.pylab as plt
 from statsmodels.tsa.stattools import adfuller, acf, pacf_ols, pacf
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.arima_model import ARIMA
+from datetime import datetime
+from processandmergedata import get_data
+from sklearn.metrics import mean_squared_error
 from matplotlib.pylab import rcParams
 rcParams['figure.figsize'] = 15, 6
 
@@ -89,46 +92,31 @@ def plotACFandPACF(ts_log_diff):
     plt.show()
 
 #Perform ARIMA predictions, get the predictions back to scale and plots the results    
-def arima(subts,p,q,start,end):
+def arima(subts,r):
     
-    ts_log = np.log(subts) 
-    ts_log_diff = difference(ts_log)
-    
-    #Computes the ARIMA model 
-    model = ARIMA(ts_log, order=(p, 1, q))  
-    results_ARIMA = model.fit(disp=-1)  
-    plt.plot(ts_log_diff)
-    plt.plot(results_ARIMA.fittedvalues, color='red')
-    plt.title('RSS: %.4f'% sum((results_ARIMA.fittedvalues-ts_log_diff)**2))    
-    plt.show()
-    
-    #Compute ARIMA predictions for existing values
-    predictions_ARIMA_diff = pd.Series(results_ARIMA.fittedvalues, copy=True)
-    
-    #Compute ARIMA predictions for forcasted values
-    predictions = results_ARIMA.predict(start=start,end=end,typ='linear')
-    predictionsSeries = pd.Series(predictions, copy=True)
-    #print predictionsSeries   
-    #print predictions_ARIMA_diff.tail(20)
-    predictions_ARIMA_diff = predictions_ARIMA_diff.append(predictionsSeries, verify_integrity=True)
-    
-    #Compute cumulative sums
-    predictions_ARIMA_diff_cumsum = predictions_ARIMA_diff.cumsum()
-    #print predictions_ARIMA_diff_cumsum    
+    r.assign("serie", subts)
+    #print r.get('serie',use_dict=True)
+    forecast = r("""
+        require(forecast)
+        rdata <-ts(serie)
+        a_fit <- auto.arima(log10(rdata))
+        summary <- summary(a_fit)
+        predLog <- predict(a_fit, n.ahead = 168)
+        pred <- 10^(predLog$pred)""")
 
-    #Add cumulatives sums back to base number
-    predictions_ARIMA_log = pd.Series(ts_log.ix[0], index=predictions_ARIMA_diff.index)
+    print r("summary(a_fit)")
+    results = r.get('pred', use_dict=True)
+    return results
 
-    predictions_ARIMA_log = predictions_ARIMA_log.add(predictions_ARIMA_diff_cumsum,fill_value=0)
-    #print predictions_ARIMA_log
-
-    predictions_ARIMA = np.exp(predictions_ARIMA_log)
+#Perform data exploration and provides plots and test results like the Duckey-Fuler's test for stationarity
+def dataEplorationAndPlotting(subts):
     plt.plot(subts)
-    plt.plot(predictions_ARIMA)
-    plt.title('RMSE: %.4f'% np.sqrt(sum((predictions_ARIMA-subts)**2)/len(subts)))  
-    plt.show()
-    
-
+    plt.show(block=False)
+    ts_log = np.log(subts)   
+    ts_log_diff = difference(ts_log)
+    test_stationarity(ts_log_diff)
+    plotACFandPACF(ts_log_diff)    
+  
 if __name__ == '__main__':
     
     missingRanges = [['2005-03-06 00:00:00','2005-03-12 23:00:00'],['2005-06-20 00:00:00','2005-06-26 23:00:00'],
@@ -137,24 +125,34 @@ if __name__ == '__main__':
                      ['2006-08-02 00:00:00','2006-08-08 23:00:00'],['2006-11-22 00:00:00','2006-11-28 23:00:00'],
                      ['2008-06-30 06:00:00','2008-07-07 23:00:00']]
     
+   predictions = np.zeros(0)
+    
+    r = pr.R(RCMD="C:\\Program Files\\R\\R-3.1.2\\bin\\R", use_numpy=True, use_pandas=True)
+            
+    
     for j in range(1,21):
         
-        data = pd.read_csv('../data/output/train_processed_zone_%s.csv'%j, parse_dates='datetime', index_col='datetime')
-        ts = data["value"]        
+        data = pd.read_csv('../data/output/train_processed_zone_%s.csv'%j, parse_dates='datetime')
+        data['datetime'] = pd.to_datetime(data['datetime'])         
+              
         print 'Predictions for zone %s'%j
         
         for i in range(0,9):
             print 'Predicitons for %s to %s'%(missingRanges[i][0],missingRanges[i][1]) 
             
             if i == 0:
-                subts = ts[:'2005-03-06']
+                ts = data[data['datetime'] < datetime(2005, 3, 6, 0, 0, 0)]
+                subts = ts["value"]                 
             else:
-                subts = ts[missingRanges[i-1][1]:missingRanges[i][0]]
+                ts = data[(pd.to_datetime(missingRanges[i-1][1]) < data['datetime']) & (data['datetime'] < pd.to_datetime(missingRanges[i][0]))]
+                subts = ts["value"]  
                 
-            plt.plot(subts)
-            plt.show()
-            ts_log = np.log(subts)   
-            ts_log_diff = difference(ts_log)
-            test_stationarity(ts_log_diff)
-            plotACFandPACF(ts_log_diff)
-            results = arima(subts,1,2,missingRanges[i][0],missingRanges[i][1])       
+            results = arima(subts,r)       
+            predictions = np.append(predictions,results)
+            
+    train, test = get_data()        
+    y_test = test[['value']]
+    
+    print 'evaluate'
+    RMSE = mean_squared_error(y_test, predictions)**0.5
+    print RMSE    
