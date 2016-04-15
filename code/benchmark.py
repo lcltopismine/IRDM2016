@@ -107,19 +107,10 @@ def main():
             print 'zone = %2i  tempstn = %2i  training R2 = %0.5f' % (zone, tempstn, score_train)
 
     # report on feature importance over training submodels
-    print 'Measuring feature importance'
-    feat_imp = 100.0 * (feat_imp / feat_imp.max())
-    sorted_idx = np.argsort(feat_imp)
-    pos = np.arange(sorted_idx.shape[0]) + .5
-    plt.figure()
-    plt.barh(pos, feat_imp[sorted_idx], align='center')
-    features = [feat_names[i] for i in sorted_idx]
-    plt.yticks(pos, features)
-    plt.xlabel('Relative Importance')
-    plt.title('Variable Importance')
-    plt.show()
+    print 'Plot feature importance (average over training submodels)'
+    plot_feature_importance(feat_imp, feat_names)
 
-    print 'rerunning best models on test data:'
+    print 'rerun best models on test data'
 
     # store results
     zoneresults = test_data[['datetime', 'zone_id', 'weight', 'value']].copy()
@@ -155,12 +146,18 @@ def main():
 
         print 'zone = %2i  tempstn = %2i  test R2 = %0.5f' % (zone, tempstn, score_test)
 
-    print 'Root Mean Square Error (zone level only), test: %.5f' % mean_squared_error(zoneresults.value, zoneresults.prediction)**0.5
-    wrsme = WRMSE(zoneresults, saveresults=True)
-    print 'Weighted Root Mean Square Error (including system level), test: %.5f' % WRMSE(zoneresults)
+    # calculate performance [calling wrmse also saves results]
+    rmse = mean_squared_error(zoneresults.value, zoneresults.prediction)**0.5
+    wrsme = WRMSE(zoneresults, saveresults=True, modelname='benchmark')
+    print 'Root Mean Square Error (zone level only), test: %.5f' % rmse
+    print 'Weighted Root Mean Square Error (including system level), test: %.5f' % wrsme
 
-    # report on feature importance over training submodels
-    print 'Measuring feature importance'
+    # report on feature importance
+    print 'Plot feature importance'
+    plot_feature_importance(feat_imp, feat_names)
+
+
+def plot_feature_importance(feat_imp, feat_names):
     feat_imp = 100.0 * (feat_imp / feat_imp.max())
     sorted_idx = np.argsort(feat_imp)
     pos = np.arange(sorted_idx.shape[0]) + .5

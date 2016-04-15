@@ -28,8 +28,10 @@ def WRMSE(zoneresults, saveresults=False, modelname=''):
 
     if saveresults:
         timestamp = datetime.now().strftime("%Y%M%d-%H%M%S")
-        save_data_csv(zoneresults, modelname+timestamp+'_zoneresults.csv')
-        save_data_csv(sysresults, modelname+timestamp+'_sysresults.csv')
+        filenamestem = modelname+'-'+timestamp
+        print 'saving predictions and errors with filestem: ' + filenamestem
+        save_data_csv(zoneresults, filenamestem+'_zoneresults.csv')
+        save_data_csv(sysresults, filenamestem+'_sysresults.csv')
 
 
     return wrmse
