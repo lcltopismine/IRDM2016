@@ -118,6 +118,7 @@ def main():
 
     feat_imp = np.zeros(len(feat_names))
 
+    # Rerun model, using best temperature station for each zone
     for zone in best_tempstn_for_zone:
 
         # get data, using best temp station for this zone
