@@ -151,7 +151,7 @@ def get_data():
 
 
 def save_data_csv(df, filename):
-    df.to_csv(filename, index=False, date_format='%Y-%m-%d %H:%M:%S')
+    df.to_csv(outputfoldername+filename, index=False, date_format='%Y-%m-%d %H:%M:%S')
 
 def get_mean_temps(temp):
     temp.set_index(['datetime'], inplace=True)
@@ -165,20 +165,20 @@ def main():
     X_train_df, X_test_df = get_data()
 
     print 'save train data'
-    save_data_csv(X_train_df, outputfoldername + 'train_processed.csv')
+    save_data_csv(X_train_df, 'train_processed.csv')
 
     print 'save test data'
-    save_data_csv(X_test_df, outputfoldername + 'test_processed.csv')
+    save_data_csv(X_test_df, 'test_processed.csv')
 
     print 'also save train data split by zoneid'
     for i in range(1, 21):
         print 'zoneid = %s' % i
         subset = X_train_df[X_train_df.zone_id == i]
         filename = 'train_processed_zone_%s.csv' % i
-        save_data_csv(subset, outputfoldername + filename)
+        save_data_csv(subset, filename)
 
     print 'save processed temperature data'
     temp = process_temp_data(datafoldername+tempfilename_train)
-    save_data_csv(temp, outputfoldername + 'tempdata_processed.csv')
+    save_data_csv(temp, 'tempdata_processed.csv')
 
 if __name__ == "__main__":  main()
