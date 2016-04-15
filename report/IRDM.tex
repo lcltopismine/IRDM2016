@@ -13,25 +13,7 @@
 \DeclareMathOperator*{\sigmoid}{sigmoid}
 \DeclarePairedDelimiterX{\norm}[1]{\lVert}{\rVert}{#1}
 
-\usepackage[ruled,vlined]{algorithm2e}
-\SetAlCapSty{textnormal}
 \renewcommand{\lstlistingname}{Listing}
-
-%FLOWCHART IMPORTS
-\usepackage{tikz}
-\usetikzlibrary{shapes,arrows,positioning}
-\tikzstyle{decision} = [diamond, draw, fill=blue!20, 
-    text width=4.5em, text badly centered, node distance=2.2cm, inner sep=0pt]
-\tikzstyle{decision2} = [diamond, draw, fill=none, 
-    text width=4.5em, text badly centered, node distance=2cm, inner sep=0pt]
-\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
-    text width=5em, text centered, minimum height=4em]
-%\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
-%    text width=5em, text centered, rounded corners, minimum height=4em]
-\tikzstyle{line} = [draw, -latex']
-\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=2cm,
-    minimum height=2em]
-\tikzstyle{cloud2} = [draw, ellipse,fill=blue!20, node distance=3cm, text width=5em, text centered, minimum height=4em]
 
 \lstset{
    breaklines=true,
@@ -75,7 +57,47 @@ placeholder for abstract
 text for introduction
 
 
+\section*{Data availability}
+In developing this work, we embraced the same constraints on data use imposed upon the original Kaggle challenge - confining ourselves to use of the originally provided datasets, which are:
+\begin{itemize}
+\item Time series for the electricity load in 20 zones, at hourly intervals between 1 January 2004 and 30 June 2008.
+\item Time series of temperature readings at 11 stations, at hourly intervals over the same time period (locations not provided)
+\item Dates of US holidays falling during the period
+\end{itemize}
+The task is to generate estimates of electricity load in each zone, and for the region as a whole, for eight hold out weeks within the period.  Additionally, forecasts are required for the week 1 July 2008 to 7 July 2008, for which no temperature readings are available.
+
+\section*{Consideration of feature selection}
+Artemis?
+
+\section*{Evaluation Methods}
+To compare the predictive power of our models, we have adopted the same evaluation method adopted by the original Kaggle competition.  This allows us to objectively compare predictions from the different approaches we consider, and also compare out results to those achieved by those participating in the original competition.
+
+This approach is a Weighted Root Mean Square Error, with a weighting of 1 for each zonal prediction within the period covered by training data, and a weighting of 8 for predictions within the forecast period.  Weightings of 20 and 160 are applied for each prediction of total regional load.
+
+Root Mean Square Error is a common evaluation method for regression problems - it is a measure of average absolute distance between predicted and actual results.  It has the advantage of being expressed in the same units as that of the data we are trying to predict.  Unlike some other approaches, it is indifferent to whether overall discrepancy is due to large discrepancies on a small number of distant outliers, or due to smaller errors affecting a large number of datapoints.
+
+The addition of weighting for this problem means that succesful models will be those which are 
+
+Monitoring the evaluation metric also allows us to monitor models for `overfitting'.  Overfitting occurs when a model becomes tuned to the specific characteristics of a training data set, and does not generalise well to unseen test data. Overfitting would be signalled if the error measure is higher for a test dataset than it is for training data.
+
+\section*{Modelling Approaches}
+
+\subsection*{ARIMA for load forecasting}
+
+\subsection*{ARIMA for temperature forecasting}
+
+\subsection*{Multiple Linear Regression}
+
+\subsection*{Gradient Boosting}
+
+\subsection*{Neural Networks}
+
+\section*{Comparative Results}
+
+\section*{Conclusions}
+
+
 \section*{References}
-\url{https://www.kaggle.com} \\
+\url{https://www.kaggle.com}
 
 \end{document}
