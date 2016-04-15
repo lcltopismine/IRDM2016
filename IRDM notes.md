@@ -1,10 +1,66 @@
+THINGS WE’VE DONE
+ARIMA model of load and temperature
+Benchmark regression model
+Gradient boosting model
+Neural Nets model
+
+CODING THINGS TO DO
+Collect results from each model
+[for benchmark, gradient, nn] - rerun with arima temp forecasts and compare results
+Tidy up and ensure commented.  Note any dependencies.
+Remove any unused code
+
+THE MANUAL - all to contribute.
+README.MD only
+List dependencies; List steps to run each model
+
+THE REPORT
+Latex.
+Intro - Artemis
+ - brief discussion of what GEFCom2012 is
+
+Design Challenges
+1. temperature forecasting      Megan
+2. feature selection						Artemis
+- what evidence that different factors are important - stuff from poster?
+- what features used
+- time series features [day of week etc]
+holidays
+discussion in Tao paper
+3. evaluation methods						Rupert
+discussion of evaluation methods root mean square; weighted.  Rupert
+
+Modelling Approaches
+Introduction								Rupert
+
+For each of the below, cover:
+- design choices
+- implementation methods
+- interpretation of feature importance [incl. charts?]
+- results
+
+1. 	Arima		(load & temp)		Megame
+2. 	Regression					 		Rupert
+3. 	Gradient Boosting    		Artemis
+4. 	Neural Nets					 		Rupert
+
+5. Compare results between models - charts? tables?
+6. Conclusions - commentary on strengths/weaknesses of different approaches; future work.   
+
+7. References   -  All to compile
+Tao paper
+IRDM competition paper
+..
+
+
+
 
 THINGS WE NEED TO COVER
 1) clear description of your systems/algorithms
 2) Motivations of design choices
 3) Sensible manipulation of the data
    AND new findings/conclusions from our analysis
-4) Appropriat choice of evaluation measures
+4) Appropriate choice of evaluation measures
 
 
 TIME SERIES PROJECT
