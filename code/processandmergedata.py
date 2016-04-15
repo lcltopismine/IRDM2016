@@ -9,7 +9,7 @@ datafoldername = '../data/'
 loadfilename_train = 'Load_history.csv'
 tempfilename_train = 'temperature_history.csv'
 loadfilename_test = 'Load_solution.csv'
-tempfilename_test = 'temperature_solution.csv'
+tempfilename_solution = 'temperature_solution.csv'
 arimafilename = 'arimaTemp.csv'
 
 outputfoldername = datafoldername+'output/'
@@ -18,7 +18,16 @@ outputfilename_test = 'test_processed.csv'
 holidayfilename = 'Holiday_Processed.csv'
 
 
-def get_data(use_ARIMA_estimates=False):
+def get_data(temp_estimate_source='historic'):
+    """
+    Processes source data and returns two dataframs containing training and test data.
+    The test period covers an interval for which temperature data is not available.
+    The parameter can be set to either use estimates based on mean values of historic temperatures at same time and day
+    of year, to use pre-processed data from an arima model built using historic data, or to use actual data (as released
+    after the original kaggle competition'.
+    :param temp_estimate_source: 'historic'(default), 'arima' or 'actuals'
+    :return:
+    """
 
     print 'get data from files'
     load = process_load_data(datafoldername+loadfilename_train)
@@ -33,10 +42,14 @@ def get_data(use_ARIMA_estimates=False):
     print 'estimate missing temps'
     # find rows with missing temperatures
     missingtemp = X_test_df[X_test_df.isnull().any(axis=1)][['datetime', 'zone_id']].copy()
-    # calculate estimates for missing periods
-    if use_ARIMA_estimates:
+
+    # source estimates for missing periods
+    if temp_estimate_source == 'arima':
         # use preprocessed arima estimates
         estimatedtemps = process_arima_temp_data(datafoldername+arimafilename)
+    elif temp_estimate_source == 'actuals':
+        # use actual temperatures - as provided after conclusion of kaggle competition
+        estimatedtemps = process_temp_data(datafoldername+tempfilename_solution)
     else:
         # use means of historical temps at same day/time.
         estimatedtemps = get_estimated_temps(missingtemp[['datetime']].drop_duplicates(), temp)
