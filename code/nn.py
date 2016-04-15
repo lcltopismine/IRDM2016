@@ -72,10 +72,8 @@ def main():
     zoneresults = test_data[['datetime', 'zone_id', 'weight', 'value']].copy()
     zoneresults['prediction'] = y_test_pred
 
-    print 'Weighted Root Mean Square Error (including system level), test: %.5f' % WRMSE(zoneresults)
-
-    print 'save results'
-    save_data_csv(zoneresults, outputfoldername+'nn_resultsTEMP.csv')
+    wrmse = WRMSE(zoneresults, saveresults=True, modelname='nn')
+    print 'Weighted Root Mean Square Error (including system level), test: %.5f' % wrmse
 
 
 def selectdata(df):
