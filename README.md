@@ -48,10 +48,18 @@ Requirements: SKLearn, matplotlib.
 main() can be run directly.
 
 ### arima.py
-MEGANE
+This code runs ARIMA modelling for energy loads. 
+
+Requirements: Pandas, Numpy, SKLearn, matplotlib, Pyper (with R installed)
+
+main() can be run directly for value predictions. For data exploration uncomment dataExplorationAndPlotting(subts) in main.
 
 ### arimaTemp.py
-MEGANE
+This code runs ARIMA modelling for temperatures.
+
+Requirements: Pandas, Numpy, SKLearn, matplotlib, Pyper (with R installed)
+
+The script can be run directly.
 
 ## Helper code
 ### processandmergedata.py
@@ -63,4 +71,4 @@ This code contains a helper function to calculated Weighted Root Mean Square Err
 It called from other modules and not run directly.
 
 ### processTemp.py
-MEGANE
+This code contains helper function to process temperatures data for ARIMA modelling. Results are one .csv file per station that will be stored in data/outputs. It is called from arimaTemp.py.
