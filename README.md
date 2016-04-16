@@ -43,7 +43,7 @@ main() can be run directly.
 ### gradientboosting.py
 This code runs a gradient boosting regression to predict load values.
 
-Requirements: SKLearn, matplotlib.
+Requirements: Pandas, Numpy, SKLearn, matplotlib.
 
 main() can be run directly.
 
