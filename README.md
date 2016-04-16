@@ -41,7 +41,7 @@ Requirements: Pandas, Numpy, SKLearn, Keras (http://keras.io), Theano, compatibl
 main() can be run directly.
 
 ### gradientboosting.py
-This code runs a gradient boosting regression model to predict load values.
+This code runs a gradient boosting regression to predict load values.
 
 Requirements: SKLearn, matplotlib.
 
