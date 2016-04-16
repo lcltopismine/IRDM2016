@@ -320,8 +320,8 @@ Multiple Linear Regression is a technique which finds the best fitting linear re
 
 As has been seen earlier, there is clearly not a direct linear relationship between the raw available inputs and electricity load.  We  introduced non-linear elements by construction of polynomial and cross-features, and allow these features to be combined in the regression model.
 
-\subsubsection*{Design approach}
-We replicated the Benchmark model[REF] proposed by Tao Hong as convener of the Kaggle competition.  The inclusion of 3rd ordered polynomial terms for temperature captures the non-linear relationship between load and temperature.  One-hot terms are introduced to capture the seasonal elements of the time series - cycles of variation are observed over daily, weekly and yearly periods - captured by the Hour (of day), Day (of week) and Month (of year) terms.
+\subsubsection*{Model design}
+We replicated the Benchmark model[REF] proposed by Tao Hong as convener of the Kaggle competition.  The inclusion of 3rd ordered polynomial terms for temperature captures the non-linear relationship between load and temperature.  One-hot terms are introduced to accommodate the seasonal elements of the time series - cycles of variation are observed over daily, weekly and yearly periods - captured by the Hour (of day), Day (of week) and Month (of year) terms.  The Trend term is linear in time over the training and forecast period.
 
 \begin{align*}
 Y &= \beta_0 + \beta_1 \times Trend + \beta_2 \times Day \times Hour + \beta_3 \times Month \\
@@ -329,6 +329,45 @@ Y &= \beta_0 + \beta_1 \times Trend + \beta_2 \times Day \times Hour + \beta_3 \
 &+ \beta_7 \times Hour \times T + \beta_8 \times Hour \times T^2 + \beta_9 \times Hour \times T^3 
 \end{align*}
 
+We are provided with temperature readings for 11 different locations.  Consistent with Hong's benchmark model, we select the readings from just one temperature station to use in generating forecasts for each zone.  These selections are made by first running models for each combination of zone and temperature station, and selecting the temperature station which provides best fit training predictions for each zone.  To assess best fit, we consider the $R^2$ statistic (which is the default scoring mechanism for sci-kit learn's implementation of Linear Regression).  This statistic measures the proportion of variability in the time series which is explained by the model - which we seek to maximise.
+
+\subsubsection*{Results}
+The model delivered an overall Weighted Root Mean Square Error on test data of 98,877.  This is very close to that reported by Hong for his baseline model.
+
+The output below shows the temperature station selected for each zone, along with $R^2$ statistics over both training and test data:
+
+\begin{verbatim}
+zone =  1  tempstn = 10  train R2 = 0.91454  test R2 = 0.85273
+zone =  2  tempstn =  9  train R2 = 0.90491  test R2 = 0.83671
+zone =  3  tempstn =  9  train R2 = 0.90491  test R2 = 0.83671
+zone =  4  tempstn =  2  train R2 = 0.86619  test R2 = 0.78987
+zone =  5  tempstn =  9  train R2 = 0.91561  test R2 = 0.84053
+zone =  6  tempstn =  9  train R2 = 0.90898  test R2 = 0.84415
+zone =  7  tempstn =  9  train R2 = 0.90491  test R2 = 0.83671
+zone =  8  tempstn = 11  train R2 = 0.91704  test R2 = 0.83712
+zone =  9  tempstn =  6  train R2 = 0.24259  test R2 = 0.35444
+zone = 10  tempstn =  1  train R2 = 0.49582  test R2 = 0.42738
+zone = 11  tempstn =  3  train R2 = 0.93155  test R2 = 0.90417
+zone = 12  tempstn =  5  train R2 = 0.93978  test R2 = 0.90279
+zone = 13  tempstn =  2  train R2 = 0.89164  test R2 = 0.81793
+zone = 14  tempstn =  4  train R2 = 0.90972  test R2 = 0.84503
+zone = 15  tempstn =  6  train R2 = 0.89341  test R2 = 0.83153
+zone = 16  tempstn =  7  train R2 = 0.92038  test R2 = 0.88541
+zone = 17  tempstn =  4  train R2 = 0.91826  test R2 = 0.84122
+zone = 18  tempstn =  7  train R2 = 0.93430  test R2 = 0.89398
+zone = 19  tempstn = 10  train R2 = 0.91545  test R2 = 0.85268
+zone = 20  tempstn = 11  train R2 = 0.90992  test R2 = 0.85622
+
+Root Mean Square Error (zone level only), test: 10947.36093
+Weighted Root Mean Square Error (including system level), test: 98877.18172
+\end{verbatim}
+
+It can be seen that the model provides a good fit for most zones, with some element of over-fitting evidenced by the difference between results on training and test data.
+
+There are some zones, notably zone 9 and zone 10, where the $R^2$ statistics are considerably lower.  The patterns of energy use in these zones are different from the norm - reflecting usage which is less subject to variation corresponding with temperature and time of day/year.  This may be indicative of energy usage in these zones being dominated by industrial rather than commercial or residential users.  It should be noted that $R^2$ is a measure of the proportion of variance explained, rather than absolute discrepancy between predicted and actual values.  In the case of these zones there is less variance over time, and so despite the low $R^2$ values, the overall impact on our key evaluation metric of root mean square error may be minimal.
+
+\subsubsection*{Implementation}
+The multiple regression model is implemented using the Pipeline and Feature Union structures of the scikit-learn library for Python.  These flexible structures allow for the piecewise extraction and transformation of different features, which can then be passed through to different machine learning models.  While we have not explored many variations on feature selection and model choice in the course of this work, the implementation approach we have used means that further exploration of such changes would be straight-forward to implement.
 
 
 \subsection*{Gradient Boosting}
