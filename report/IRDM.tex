@@ -130,8 +130,93 @@ The PACF plot represents the part of the correlation between two data point Yt a
 By differencing and log transforming the raw data and plot ACF and PACF one can see if there is still some correlation left in the residuals that would be removed by using ARIMA. Plotting the ACF and PACF on the ARIMA results allows to check that there is no more correlation in the residuals and that the ARIMA model is working well.
 During this project, ARIMA was used for two purposes: predict the missing energy load values and predict the missing temperature values in order to use them as features in other prediction algorithms. 
 
+\subsubsection*{ARIMA for loads forecasting}
 
-\subsection*{ARIMA for temperature forecasting}
+At first, it was decided to try implementing ARIMA modelling directly on the energy loads time series to predict the missing values. 
+However, since the energy loads dataset contains hourly data from 2004-01-01 to 2008-06-30 for 20 different zones in the United States, each of this zone needed to be treated as an independent time series. Moreover, within that time range, 8 separate weeks of data were missing for each zone and needed to be forecasted as well as the week following the last data point of the set.
+Most of ARIMA modelling implementation usually assume that there is no missing data within the time range of the given time series. Since the energy loads data sets was missing 8 weeks, it required modelling every range of data in between those missing weeks as an independent time series as well.
+As a result, the implemented ARIMA algorithm dealt with 9 independent time series for each zone, thus, 180 time series in total.
+
+Although the implemented algorithm dealt with a lot of independent time series, the results were constant over them. In the following are shown results for the time series from 2004-01-01 to 2005-03-06.
+The following plot represents the raw time series that does not look stationary, if the overall trend is difficult to identify, there are clearly some patterns present.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.80\textwidth]{loadsRawData}
+  \caption{Shows the raw data for the first date range of zone 1 }
+\end{figure}
+
+The next plot represents the 1st order differenced log transformed data. This time, the series looks much more stationary. 
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.80\textwidth]{LoadsStationary}
+  \caption{Shows the 1st order differenced log transformed data for the first date range of zone 1 }
+\end{figure}
+
+In order to confirm that the series is stationary, the algorithm runs the Dickey-Fuller test. The output is the following:
+
+Results of Dickey-Fuller Test:
+Test Statistic: -1.154495e+01
+p-value: 3.559772e-21
+#Lags Used: 27
+Number of Observations Used: 10279.000000
+Critical Value 5\%: -2.861821
+Critical Value 1\%:  -3.430986
+Critical Value 10\%: -2.566920
+
+The test statistic is smaller than the critical value of 1\% which means the rejection of the non-stationarity hypothesis has less than 1\% chance to be wrong. One can conclude with confidence that the time series is stationary.
+
+The following charts, show the ACF and PACF values of the time series. Both plots show a lot of spikes going out of the insignificant zone represented by the dotted horizontal lines. It means that the time series residuals has some information left to be extracted by the ARIMA model.
+One could also notice the daily seasonality represented by the spikes at lag 24 (24 hours seasonality).
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.80\textwidth]{ACFandPACFLoadsRaw}
+  \caption{Shows the ACF and PACF values for the differenced log transformed data for the first date range of zone 1 }
+\end{figure}
+
+By using the auto.arima() function provided by R, the algorithm finds and uses the best ARIMA model for the given time series, i.e, the parameter order that provides the lowest Bayesian information criterion (BIC).
+In R, one can obtain a summary of the best ARIMA model. In this case, the output was the following:
+
+Series: log10(data) 
+ARIMA(4,1,3)                    
+
+Coefficients:
+         ar1      ar2     ar3      ar4      ma1      ma2      ma3
+      1.7072  -1.1621  0.5679  -0.2606  -0.6993  -0.1086  -0.1276
+s.e.  0.0547   0.0921  0.0613   0.0229   0.0556   0.0442   0.0317
+
+sigma^2 estimated as 0.000333:  log likelihood=26612.67
+AIC=-53209.33   AICc=-53209.32   BIC=-53151.42
+
+Training set error measures:
+                     ME       RMSE        MAE          MPE      MAPE      MASE        ACF1
+Training set 2.2533e-05 0.01824026 0.01375096 -0.000907019 0.3242475 0.1096394 0.001905331
+
+Here, the parameters of the model are p=4, d=1 and q=3 but it is important to note it was not the case for all of the independent time series the algorithm dealt with. If the d was always equal to zero, the value of p and q varied. 
+The following plots represents a subset of the raw data for the given time series in black and the predicted values for the following week in blue. One can see that the first predicted values reflect some of the variation from the actual time series but then the remaining values become linear quickly.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.80\textwidth]{LoadsPred}
+  \caption{Shows predicted values for the week after for the first date range of zone 1 }
+\end{figure}
+
+If one plots the ACF and PACF of our best fit ARIMA model, one can see that although the spikes are less pronounced, some of them are still out of the insignificant zone which means that there is still information left in the residuals and explains why the model does not produce very good results.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.80\textwidth]{ACFandPACFLoadsArimaResults}
+  \caption{Shows ACF and PACF values for the ARIMA residuals for the first date range of zone 1 }
+\end{figure}
+
+The results of the implemented ARIMA model for energy loads could come from several reasons. First, the fact that the algorithm dealt with several independent time series for the same zone in order to deal with missing values might have result in a loss of information. As said before, the best fit ARIMA model was not the same for each independent time series. Without the missing values the algorithm would have dealt with only one time series per zone and it would have been possible to see the bigger picture instead of focusing one smaller ranges.
+
+The second reason why the ARIMA did not work very well might be because the data were too detailed. Indeed, measuring the energy loads hourly over four years produces a lot of information and a lot of white noise which could explain why there was information left in the residuals of the best fit model. Finally, some time series are simply not suitable for ARIMA modelling and some other approaches need to be considered.
+
+
+\subsubsection*{ARIMA for temperature forecasting}
 
 \subsection*{Multiple Linear Regression}
 
