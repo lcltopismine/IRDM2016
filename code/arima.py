@@ -37,29 +37,6 @@ def test_stationarity(ts):
         dfoutput['Critical Value (%s)'%key] = value
     print dfoutput
 
-#Decompose the time series as trend, seaonality and residuals and plot the results    
-def decompose(ts_log):
-    decomposition = seasonal_decompose(ts_log)
-    
-    trend = decomposition.trend
-    seasonal = decomposition.seasonal
-    residual = decomposition.resid
-    
-    plt.subplot(411)
-    plt.plot(ts_log, label='Original')
-    plt.legend(loc='best')
-    plt.subplot(412)
-    plt.plot(trend, label='Trend')
-    plt.legend(loc='best')
-    plt.subplot(413)
-    plt.plot(seasonal,label='Seasonality')
-    plt.legend(loc='best')
-    plt.subplot(414)
-    plt.plot(residual, label='Residuals')
-    plt.legend(loc='best')
-    plt.tight_layout()    
-    plt.show()
-
 #Return the differenced time series values and plot the result    
 def difference(ts_log):
     ts_log_diff = ts_log - ts_log.shift()
@@ -109,7 +86,7 @@ def arima(subts,r):
     return results
 
 #Perform data exploration and provides plots and test results like the Duckey-Fuler's test for stationarity
-def dataEplorationAndPlotting(subts):
+def dataExplorationAndPlotting(subts):
     plt.plot(subts)
     plt.show(block=False)
     ts_log = np.log(subts)   
@@ -149,6 +126,7 @@ if __name__ == '__main__':
                 
             results = arima(subts,r)       
             predictions = np.append(predictions,results)
+            #dataExplorationAndPlotting(subts)
             
     train, test = get_data()        
     y_test = test[['value']]
