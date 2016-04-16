@@ -207,7 +207,7 @@ MASE      ACF1
 0.1096394 0.001905331
 \end{verbatim}
 
-Here, the parameters of the model are p=4, d=1 and q=3 but it is important to note it was not the case for all of the independent time series the algorithm dealt with. If the d was always equal to zero, the value of p and q varied. 
+Here, the parameters of the model are p=4, d=1 and q=3 but it is important to note it was not the case for all of the independent time series the algorithm dealt with. If the d was always equal to one, the value of p and q varied. 
 
 The following plot represents a subset of the raw data for the given time series in black and the predicted values for the following week in blue. One can see that the first predicted values reflect some of the variation from the actual time series but then the remaining values become linear quickly.
 
@@ -392,6 +392,17 @@ In our approach, a set of features was introduced to the gradient boosting regre
 
 \section*{Comparative Results}
 
+\begin{table}
+  \begin{tabular}{l c r}
+    Method  & RMSE & WRMSE \\
+    \hline
+    MLR     & 10947 & 98877 \\
+    GB      & 76676 & 112081 \\
+    NN      & 12712 & 87731 \\
+  \end{tabular}
+  \caption{Summarises the Root Mean Square Error and the Weighted Root Mean Square Error of each technique}
+  \label{tab:error_comp}
+\end{table}
 \section*{Conclusions}
 
 
