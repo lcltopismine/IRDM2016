@@ -392,13 +392,14 @@ In our approach, a set of features was introduced to the gradient boosting regre
 
 \section*{Comparative Results}
 
-\begin{table}
-  \begin{tabular}{l c r}
+\begin{table}[H]
+  \begin{tabular}{l r r}
     Method  & RMSE & WRMSE \\
     \hline
-    MLR     & 10947 & 98877 \\
-    GB      & 76676 & 112081 \\
-    NN      & 12712 & 87731 \\
+    Baseline - Multiple Linear Regression	& 10,947 & 98,877 \\
+    Gradient Boosting						& 76,676 & 112,081 \\
+    Neural Network							& 12,712 & 87,731 \\
+    \hline
   \end{tabular}
   \caption{Summarises the Root Mean Square Error and the Weighted Root Mean Square Error of each technique}
   \label{tab:error_comp}
