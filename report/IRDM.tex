@@ -322,7 +322,7 @@ This last plot shows the ACF and PACF values of the residuals of the ARIMA model
 
 As it has been said before, maybe the ARIMA did not work very well because the data were too detailed. Indeed, measuring the temperatures hourly over four years produces a lot of information and a lot of white noise which could explain why there was information left in the residuals of the best fit model. This time series might not be a good fit for ARIMA modelling.
 
-\subsection{Reflection on ARIMA and seasonality}
+\subsection*{Reflection on ARIMA and seasonality}
 ARIMA is a powerful and widely used technique for time series forecasting.  In our consideration here, we have had some success in processing timeseries data to accommodate the impact of autocorrelation between time periods.  However, we have not fully accommodated the multiple seasonal effects within the data (present at both a yearly and daily frequency in temperature data, and at a yearly, weekly and daily frequency within load data).
 
 Extensions to ARIMA can account for seasonal effects.  These haven't been fully explored here.  Indeed, we were not able to easily identify suitable libraries which could assist with the multiple-frequency seasonality patterns that we identified within these data series.  Incorporating such extensions would be an important enhancement of this work.
