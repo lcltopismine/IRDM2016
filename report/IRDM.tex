@@ -24,7 +24,8 @@
 
 
 \title{COMPGI15: Information Retrieval \& Data Mining \\
-Time Series Forecasting Group Project}
+Time Series Forecasting Group Project \\
+A hierarchical load forecasting problem: backcasting and forecasting hourly loads for a US utility with 20 zones.}
 
 
 \author{
@@ -51,7 +52,8 @@ Megane Martinez\\
 
 % No abstract needed
 \begin{abstract}
-placeholder for abstract
+We present a range of techniques for tackling hierarchical forecasting of a time series for electricity loads for a US utility, incorporating temperature as an explanatory variable.  We consider Multiple Linear Regression, ARIMA, Gradient Boosting and Neural Network approaches. We present results that are comparable to the best achieved in the 2012 Kaggle competition tackling this forecasting problem. \\
+Code is available at \url{https://github.com/rupchap/IRDM2016}.
 \end{abstract}
 
 \section*{Introduction}
@@ -79,6 +81,8 @@ Teams that took part in the Kaggle competition usually used naive techniques for
 \section*{Consideration of feature selection}
 Before determining the features of the model and after performing data cleansing and editing, it is essential to create and examine the time plot of the data. The time plot can show the behavior of the data and reveal important features such as seasonal variation and trend which is defined as “an increasing normal number assigned to each observation in chronological order”.
 
+Exploratory analysis of patterns within the time series, and the relation between temperature and load levels, are included in the poster which accompanies this paper.
+
 In our case the time plot showed various fluctuations with an annual seasonality which led us to develop a set that combines several features; trend, hour with 24 levels (representing the hours of a day), weekday with seven levels (representing the days of a week), month with 12 levels (representing the months of a year), temperature of the current hour, temperature of the current hour and cubic temperature of the current hour. In addition to those main features, interaction between them was taken into account forming several cross effects; weekday$\times$hour, temperature$\times$month, temperature$^2$$\times$month, temperature$^3$$\times$month, temperature$\times$hour, temperature$^2$$\times$hour and temperature$^3$$\times$hour. After measuring the feature importance, we plotted the results as shown in Figure \ref{fig:var_imp}.
 \begin{figure}[H]
   \centering
@@ -87,20 +91,22 @@ In our case the time plot showed various fluctuations with an annual seasonality
   \label{fig:var_imp}
 \end{figure}
 
+`Variable importance' here is a proxy measure taken as the coefficient value (mean coefficient value in the case of one-hot measures) of a Multiple Linear Regression model, where input variables have first had standardised scaling applied to ensure comparability.
+
 \section*{Evaluation Methods}
-To compare the predictive power of our models, we have adopted the same evaluation method adopted by the original Kaggle competition.  This allows us to objectively compare predictions from the different approaches we consider, and also compare out results to those achieved by those participating in the original competition.
+To compare the predictive power of our models, we have adopted the same evaluation method used by the original Kaggle competition.  This allows us to objectively compare predictions from the different approaches we consider, and also compare out results to those achieved by those participating in the original competition.
 
 This approach is a Weighted Root Mean Square Error, with a weighting of 1 for each zonal prediction within the period covered by training data, and a weighting of 8 for predictions within the forecast period.  Weightings of 20 and 160 are applied for each prediction of total regional load.
 
 Root Mean Square Error is a common evaluation method for regression problems - it is a measure of average absolute distance between predicted and actual results.  It has the advantage of being expressed in the same units as that of the data we are trying to predict.  Unlike some other approaches, it is indifferent to whether overall discrepancy is due to large discrepancies on a small number of distant outliers, or due to smaller errors affecting a large number of datapoints.
 
-The addition of weighting for this problem means that succesful models will be those which are 
+The addition of weighting for this problem means that succesful models will be those which are particularly effective at providing forecasts over future periods for which not all explanatory variables are available.
 
 Monitoring the evaluation metric also allows us to monitor models for `overfitting'.  Overfitting occurs when a model becomes tuned to the specific characteristics of a training data set, and does not generalise well to unseen test data. Overfitting would be signalled if the error measure is higher for a test dataset than it is for training data.
 
 \section*{Modelling Approaches}
 
-\subsection*{ARIMA}
+\section*{ARIMA}
 
 \subsubsection*{The model}
 What makes time series different from other regression problems is that they are time dependent. Therefore, instead on trying to find some correlations between the value to predict and external features, one can try to find correlations between the data points in a time series among themselves in order to predict future values. ARIMA (Auto Regressive Integrated Moving Average) is a time series modelling method that uses this approach and has become popular in the seventies.
@@ -108,10 +114,10 @@ Before we discuss how ARIMA actually works, let’s see what the prerequisites a
 
 Typically, time series can be divided into three components: the trend, the seasonality and the residuals. The trend is the long term direction of the series (upwards or downwards), the seasonality represents recurrent patterns that can be quarterly, monthly, daily and so on. The residuals are the random noise that is left after extraction of the other two components. The interference of the trend, seasonality and residuals produces the final time series.
 Most of time series modelling approaches, ARIMA included, works on the assumption that the series is stationary, i.e, its mean and variance remain constant over time. In order to use ARIMA to model a time series, one needs to, first, make it stationary on both mean and variance.
-One of the way of making a time series stationary on mean, is to remove the trend by using first order differencing: Y’t = Yt – Yt-1.
+One of the way of making a time series stationary on mean, is to remove the trend by using first order differencing: $Y'(t) = Y(t)-Y(t-1)$.
 
 Most of time series become stationary after first order differencing. If the residuals time series still has a trend, one can use 2nd order differencing.
-In order to make a series stationary on variance, one usually uses log transformation: Y’t = log10(Yt).
+In order to make a series stationary on variance, one usually uses log transformation: $Y'(t) = \log_{10}Y(t)$.
 Finally, the combination of both 1st order differencing and log transformation makes a time series stationary on both mean and variance.
 
 ARIMA is divided in three components, each with its parameter. AR stands for Auto Regressive and its parameter in p. I stands for integrated and its parameter is d and MA stands for Moving Average and its parameter is q.
@@ -122,15 +128,15 @@ The Moving Average part of the model defines the number of lagged errors used to
 \subsubsection*{Design choices}
 Several statistical libraries or packages offer tools to implement ARIMA modelling. However some are more comprehensive than others. For example, in Python, the package \verb~statsmodels.tsa.arima_model~ allows one to create ARIMA modelling but does not have a way to find the parameters (p,d,q) of the best fit model automatically. The package \verb~forecast~ in R however does provide this possibility with the \verb~auto.arima()~ function.
 
-In our team, none of us were very familiar with R so we decided to use python for the overall implementation and to use an R package (PypeR) to still benefit from R additional capabilities.
+In our team, none of us were very familiar with R so we decided to use python for the overall implementation and to use an R package (\verb#PypeR#) to still benefit from the additional capabilities of R.
 
 In order to check the stationarity of the time series we used the Dickey-Fuller test where the null hypothesis is that the time series is non-stationary. If the test result is below the critical value we can reject the null hypothesis and say the time series is stationary and suitable for ARIMA modelling.
 
 Checking the effectiveness of the ARIMA models was done by plotting and analysing the ACF (Auto Correlation Fuction) and PACF (Partial Auto Correlation Function) of both the differenced and log transformed data and then the ARIMA output.
 
-The ACF plot represents the correlation coefficient between a time series and lags of itself. For instance, by looking at an ACF plot, one can know if for any data point Yt of the serie, Yt is correlated with Yt-1, Yt-2 and so on.
+The ACF plot represents the correlation coefficient between a time series and lags of itself. For instance, by looking at an ACF plot, one can know if for any data point $Y(t)$ of the series, $Y(t)$ is correlated with $Y(t-1)$, $Y(t-2)$ and so on.
 
-The PACF plot represents the part of the correlation between two data point Yt and Yt-n that is not explained by their mutual correlation with the Yt-1 to Yt-n+1.
+The PACF plot represents the part of the correlation between two data point $Y(t)$ and $Y(t-n)$ that is not explained by their mutual correlation with the $Y(t-1)$ to $Y(t-n+1)$.
 
 By differencing and log transforming the raw data and plot ACF and PACF one can see if there is still some correlation left in the residuals that would be removed by using ARIMA. Plotting the ACF and PACF on the ARIMA results allows to check that there is no more correlation in the residuals and that the ARIMA model is working well.
 
@@ -186,7 +192,7 @@ One could also notice the daily seasonality represented by the spikes at lag 24 
   \caption{Shows the ACF and PACF values for the differenced log transformed data for the first date range of zone 1 }
 \end{figure}
 
-By using the auto.arima() function provided by R, the algorithm finds and uses the best ARIMA model for the given time series, i.e, the parameter order that provides the lowest Bayesian information criterion (BIC).
+By using the \verb#auto.arima()# function provided by R, the algorithm finds and uses the best ARIMA model for the given time series, i.e, the parameter order that provides the lowest Bayesian information criterion (BIC).
 In R, one can obtain a summary of the best ARIMA model. In this case, the output was the following:
 \begin{verbatim}
 Series: log10(data) 
@@ -203,6 +209,7 @@ AIC=-53209.33   AICc=-53209.32   BIC=-53151.42
 Training set error measures:
              ME         RMSE       MAE        MPE          MAPE      
 Training set 2.2533e-05 0.01824026 0.01375096 -0.000907019 0.3242475
+
 MASE      ACF1
 0.1096394 0.001905331
 \end{verbatim}
@@ -315,13 +322,18 @@ This last plot shows the ACF and PACF values of the residuals of the ARIMA model
 
 As it has been said before, maybe the ARIMA did not work very well because the data were too detailed. Indeed, measuring the temperatures hourly over four years produces a lot of information and a lot of white noise which could explain why there was information left in the residuals of the best fit model. This time series might not be a good fit for ARIMA modelling.
 
-\subsection*{Multiple Linear Regression}
+\subsection{Reflection on ARIMA and seasonality}
+ARIMA is a powerful and widely used technique for time series forecasting.  In our consideration here, we have had some success in processing timeseries data to accommodate the impact of autocorrelation between time periods.  However, we have not fully accommodated the multiple seasonal effects within the data (present at both a yearly and daily frequency in temperature data, and at a yearly, weekly and daily frequency within load data).
+
+Extensions to ARIMA can account for seasonal effects.  These haven't been fully explored here.  Indeed, we were not able to easily identify suitable libraries which could assist with the multiple-frequency seasonality patterns that we identified within these data series.  Incorporating such extensions would be an important enhancement of this work.
+
+\section*{Multiple Linear Regression}
 Multiple Linear Regression is a technique which finds the best fitting linear relationship between several input variables and a scalar output variable - in this case Electricity Load.  The best fit is determined as that linear combination of candidate features which minimises the Mean Square Error between predictions and true values.
 
 As has been seen earlier, there is clearly not a direct linear relationship between the raw available inputs and electricity load.  We  introduced non-linear elements by construction of polynomial and cross-features, and allow these features to be combined in the regression model.
 
-\subsubsection*{Model design}
-We replicated the Benchmark model[REF] proposed by Tao Hong as convener of the Kaggle competition.  The inclusion of 3rd ordered polynomial terms for temperature captures the non-linear relationship between load and temperature.  One-hot terms are introduced to accommodate the seasonal elements of the time series - cycles of variation are observed over daily, weekly and yearly periods - captured by the Hour (of day), Day (of week) and Month (of year) terms.  The Trend term is linear in time over the training and forecast period.
+\subsection*{Model design}
+We replicated the Benchmark model proposed by Tao Hong as convener of the Kaggle competition.  The inclusion of 3rd ordered polynomial terms for temperature captures the non-linear relationship between load and temperature.  One-hot terms are introduced to accommodate the seasonal elements of the time series - cycles of variation are observed over daily, weekly and yearly periods - captured by the Hour (of day), Day (of week) and Month (of year) terms.  The Trend term is linear in time over the training and forecast period.
 
 \begin{align*}
 Y &= \beta_0 + \beta_1 \times Trend + \beta_2 \times Day \times Hour + \beta_3 \times Month \\
@@ -331,8 +343,10 @@ Y &= \beta_0 + \beta_1 \times Trend + \beta_2 \times Day \times Hour + \beta_3 \
 
 We are provided with temperature readings for 11 different locations.  Consistent with Hong's benchmark model, we select the readings from just one temperature station to use in generating forecasts for each zone.  These selections are made by first running models for each combination of zone and temperature station, and selecting the temperature station which provides best fit training predictions for each zone.  To assess best fit, we consider the $R^2$ statistic (which is the default scoring mechanism for sci-kit learn's implementation of Linear Regression).  This statistic measures the proportion of variability in the time series which is explained by the model - which we seek to maximise.
 
+We use estimated temperature data to fill in for missing data over the prediction period.  In common with Hong's benchmark model, we estimate these data by taking averages over available history - using mean temperature for the same station, day of year and hour of day over previous years.  We also used temperature estimates from the ARIMA model discussed above - these results are presented in the final results section.
+
 \subsubsection*{Results}
-The model delivered an overall Weighted Root Mean Square Error on test data of 98,877.  This is very close to that reported by Hong for his baseline model.
+The model delivered an overall Weighted Root Mean Square Error on test data of 98,877 (using historic mean temperature estimates).  This is very close to that reported by Hong for his baseline model.
 
 The output below shows the temperature station selected for each zone, along with $R^2$ statistics over both training and test data:
 
@@ -373,7 +387,7 @@ The multiple regression model is implemented using the Pipeline and Feature Unio
 \subsection*{Gradient Boosting}
 Gradient Boosting is an ensemble learning method which builds additive regression models in a forward stage-wise manner. In each stage it fits a parameterised base learner to the gradient of the loss function which decreases in regard to the model values of every training sample. Gradient boosting can handle and process various data types and many different features. The factor of randomisation of gradient boosting also improves its accuracy and execution speed. Moreover, through its robust loss functions it can eliminate noise by removing outliers and thus, prevent the training model from overfitting to the data samples.
 
-In our approach, a set of features was introduced to the gradient boosting regression model in order to best fit the data. The features are composed by the month (1-12), weekday (1-7), hour (1-24), summer (true-false), trend, holiday falling and the temperature measurements of each of the 11 temperature stations. After training the model the root mean squared error of the testing was generated and was approximately equal to 76676 whilst its weighted root mean squared error was approximately equivalent to 112081. Finally, the error of the training set and test set was computed at each iteration and can be summarised in Figure \ref{fig:deviance}, whilst the importance of all features was measured and can be observed in Figure \ref{fig:boost_imp}.
+In our approach, a set of features was introduced to the gradient boosting regression model in order to best fit the data. The features are composed by the month (1-12), weekday (1-7), hour (1-24), summer (true-false), trend, holiday falling and the temperature measurements of each of the 11 temperature stations. After training the model the root mean squared error of the testing was generated and was approximately equal to 76,676 whilst its weighted root mean squared error (incorporating predictions at system as well as zonal level) was approximately equivalent to 112,081. Finally, the error of the training set and test set was computed at each iteration and can be summarised in Figure \ref{fig:deviance}, whilst the importance of all features was measured and can be observed in Figure \ref{fig:boost_imp}.
 \begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{deviance}
@@ -389,14 +403,14 @@ In our approach, a set of features was introduced to the gradient boosting regre
 
 
 \subsection*{Neural Networks}
-Neural networks can be used to tackle regression problems. By including multiple connected hidden layers, neural nets can can effectively learn complex non-linear relationships between explanatory variables.
+Neural networks can be used to tackle regression problems. By including multiple connected hidden layers, neural nets can can effectively learn complex non-linear relationships between explanatory variables.  Training of neural networks is computationally expensive, requiring extended training runs during which back-propagation techniques are used to modify weight parameters in a direction that reduces our loss function (a measure of absolute difference between predicted and true values).
 
 \subsubsection*{Model design}
-Our initial neural network includes three densely connected hidden layers, consisting of 304, 152 and 38 nodes respectively.  Between the first two layers we used a $tanh$ activation function, with outputs from the final layer then being mapped to a single output node which was trained against actual load values.
+Our neural network includes three densely connected hidden layers, consisting of 304, 152 and 38 nodes respectively.  Between the first two layers we used a $tanh$ activation function, with outputs from the final layer then being mapped to a single output node which was trained against actual load values.
 
 We trained the model against a Mean Square Error loss function using batch training and optimising ADAM, a stochastic gradient descent method.
 
-The network we built is relatively deep considering the scope of the problem, and so there was a risk of overfitting during training.  We tackled this by including drop-out layers between the hidden layers.  Drop-out mitigates against overfitting, by randomly omitting a proportion of nodes at each epoch of training.
+The network we built is relatively deep considering the scope of the problem, and so there was a risk of overfitting during training.  We tackled this by including drop-out layers between the hidden layers.  Drop-out mitigates against overfitting, by randomly omitting a proportion of nodes at each epoch of training, preventing individual routes through the network from becoming overly specialized, and encouraging a more generalized solution.
 
 There are many parameters that can be tuned in the configuration of neural networks, and in many respects the theory guiding appropriate choice of parameters and network topology is still under development.  We achieved competitive results with this network design, but clearly there is great scope to further refine the model through cross-validation.
 
@@ -426,27 +440,54 @@ After applying one-hot transformations to the categorical variables in the input
 The model was then run for 200 epochs, carrying out ADAM optimisation over batch sizes of 100 records.
 
 \section*{Comparative Results}
+The table below shows the comparative results achieved for a selection of our models.  Note that RMSE is a simple (unweighted) Root Mean Square Error across all zonal predictions for the test periods.  WRMSE is a Weighted Root Mean Square Error including errors on system level (i.e. sum across zones), with additional weighting on system level and unseen period forecasts.
+
+Along with results from using temperature estimates from both the historic mean and ARIMA approaches, we also present results from using actual temperature measures for the forecast period.  These actuals were released after the conclusion of the Kaggle competition.
 
 \begin{table}[H]
-  \begin{tabular}{l r r}
-    Method  & RMSE & WRMSE \\
+  \begin{tabular}{l l r r}
+    Method &
+    Source of temperature estimates &
+    RMSE & WRMSE \\
     \hline
-    Baseline - Multiple Linear Regression	& 10,947 & 98,877 \\
-    Gradient Boosting						& 76,676 & 112,081 \\
-    Neural Network							& 12,712 & 87,731 \\
+    Baseline - Linear Regression &
+    Historic mean &
+    10,947 & 98,877 \\
+    &
+    ARIMA	&
+    12,027 & 154,804 \\
+    &
+    Actuals &
+    10,226 & 78,098 \\ \hline
+    Gradient Boosting &
+    Historic mean &
+    76,676 & 112,081 \\ \hline
+    Neural Network &
+    Historic mean &
+    12,712 & 87,731 \\
+    Neural Network &
+    ARIMA &
+    14,114 & 165,947 \\
+    Neural Network &
+    Actuals &
+    12,235 & 77,363 \\
     \hline
   \end{tabular}
   \caption{Summarises the Root Mean Square Error and the Weighted Root Mean Square Error of each technique}
   \label{tab:error_comp}
 \end{table}
+
+Our best result was achieved using a Neural Network incorporating temperature estimates based on means observed during the historic dataset.  The WRMSE score of 87,731 compares well with those achieved during the Kaggle competition - this result would have placed in the top 20 on the final leaderboard.
+
+
 \section*{Conclusions}
 We explored several different techniques for forecasting energy usage, given inputs limited to date/time and temperature readings from weather stations of unknown geographic location.
 
 We discovered that there were strong non-linear relationships between explanatory variables and the measure of interest.
 
-We succesfully replicated the benchmark model proposed for the 2012 Kaggle competition using this data.
+We successfully replicated the benchmark model proposed for the 2012 Kaggle competition using this data.
 
-We considered several more sophisticated approaches to improve on this benchmark model, including consideration of ARIMA techniques to forecast both energy load directly, and to predict future temperature patterns as an input to other modelling techniques.
+We considered several more sophisticated approaches to improve on this benchmark model, including consideration of ARIMA techniques to forecast both energy load directly, and to predict future temperature patterns as an input to other modelling techniques.  While this technique did not ultimately add value over more naive approaches in our implementation, we consider that there is great potential for this approach, if the multi-level seasonality within the data can be more fully accommodated.
 
 We showed the potential of Deep Learning / Neural Network techniques as applied to regression problems of this type, achieving results that were on a par with the best results achieved during the Kaggle competition.
 
@@ -455,9 +496,8 @@ We used Machine Learning libraries developed for Python to construct flexible mo
 Potential areas for future work include the refinement of ARIMA or other time series forecasting techniques to provide more robust esitmates of temperature trends (particularly modelling the highly seasonal aspects of this data), and exploration of alternative neural network topologies and parameter settings through cross-validation.
 
 \section*{References}
-\url{https://www.kaggle.com}
-
-%\url{https://www.kaggle.com/c/global-energy-forecasting-competition-2012-load-forecasting}
+Kaggle Global Energy Forecasting Competition 2012 \\
+\url{https://www.kaggle.com/c/global-energy-forecasting-competition-2012-load-forecasting}
 
 Chatfield, Chris. Time-series forecasting. CRC Press, 2000.
 
@@ -466,5 +506,11 @@ Friedman, Jerome H. "Stochastic gradient boosting." Computational Statistics \& 
 Hong, Tao, Pierre Pinson, and Shu Fan. "Global energy forecasting competition 2012." International Journal of Forecasting 30.2 (2014): 357-363.
 
 Taieb, Souhaib Ben, and Rob J. Hyndman. "A gradient boosting approach to the Kaggle load forecasting competition." International Journal of Forecasting 30.2 (2014): 382-394.
+
+Hon, Tao. "Short Term Electric Load Forecasting" \\
+\url{http://www.lib.ncsu.edu/resolver/1840.16/6457}
+
+Kingma Diederik, P. and Lei Ba, Jimmy. "ADAM: A method for stochastic optimization" \\
+\url{http://arxiv.org/pdf/1412.6980.pdf}
 
 \end{document}
