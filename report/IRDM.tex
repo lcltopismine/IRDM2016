@@ -389,6 +389,41 @@ In our approach, a set of features was introduced to the gradient boosting regre
 
 
 \subsection*{Neural Networks}
+Neural networks can be used to tackle regression problems. By including multiple connected hidden layers, neural nets can can effectively learn complex non-linear relationships between explanatory variables.
+
+\subsubsection*{Model design}
+Our initial neural network includes three densely connected hidden layers, consisting of 304, 152 and 38 nodes respectively.  Between the first two layers we used a $tanh$ activation function, with outputs from the final layer then being mapped to a single output node which was trained against actual load values.
+
+We trained the model against a Mean Square Error loss function using batch training and optimising ADAM, a stochastic gradient descent method.
+
+The network we built is relatively deep considering the scope of the problem, and so there was a risk of overfitting during training.  We tackled this by including drop-out layers between the hidden layers.  Drop-out mitigates against overfitting, by randomly omitting a proportion of nodes at each epoch of training.
+
+There are many parameters that can be tuned in the configuration of neural networks, and in many respects the theory guiding appropriate choice of parameters and network topology is still under development.  We achieved competitive results with this network design, but clearly there is great scope to further refine the model through cross-validation.
+
+\subsubsection*{Implementation}
+We used the Python library Keras to construct the neural network.  Keras provides a suite of tools to quickly construct neural networks, which can then be executed using GPU hardware to run calculations in parallel.
+
+The model was defined as follows:
+
+\begin{verbatim}
+model = Sequential()
+model.add(Dense(input_dim*4, input_dim=input_dim))
+model.add(Activation('tanh'))
+model.add(Dropout(0.5))
+model.add(Dense(input_dim*2))
+model.add(Activation('tanh'))
+model.add(Dropout(0.5))
+model.add(Dense(38))
+model.add(Dense(1))
+model.compile(loss='mse', optimizer='adam')
+model.fit(X, y, nb_epoch=200, batch_size=100)
+\end{verbatim}
+
+Input variables were preprocessed using a sci-kit learn pipeline, including extracting categorical features from the date/time of measurements, allowing the model to discover relationships involving hour of day, day of week and month of year.  We also incorporated whether the day was a US holiday.  In contrast to the Multiple Linear Regression approach, temperature readings from all 11 weather stations were available for use in predicting for each zone.
+
+After applying one-hot transformations to the categorical variables in the input data, there was a total of 78 input variables.
+
+The model was then run for 200 epochs, carrying out ADAM optimisation over batch sizes of 100 records.
 
 \section*{Comparative Results}
 
@@ -405,7 +440,19 @@ In our approach, a set of features was introduced to the gradient boosting regre
   \label{tab:error_comp}
 \end{table}
 \section*{Conclusions}
+We explored several different techniques for forecasting energy usage, given inputs limited to date/time and temperature readings from weather stations of unknown geographic location.
 
+We discovered that there were strong non-linear relationships between explanatory variables and the measure of interest.
+
+We succesfully replicated the benchmark model proposed for the 2012 Kaggle competition using this data.
+
+We considered several more sophisticated approaches to improve on this benchmark model, including consideration of ARIMA techniques to forecast both energy load directly, and to predict future temperature patterns as an input to other modelling techniques.
+
+We showed the potential of Deep Learning / Neural Network techniques as applied to regression problems of this type, achieving results that were on a par with the best results achieved during the Kaggle competition.
+
+We used Machine Learning libraries developed for Python to construct flexible models that can easily be developed to explore other parameter settings and incorporation of additional features.
+
+Potential areas for future work include the refinement of ARIMA or other time series forecasting techniques to provide more robust esitmates of temperature trends (particularly modelling the highly seasonal aspects of this data), and exploration of alternative neural network topologies and parameter settings through cross-validation.
 
 \section*{References}
 \url{https://www.kaggle.com}
