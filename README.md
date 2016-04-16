@@ -41,7 +41,11 @@ Requirements: Pandas, Numpy, SKLearn, Keras (http://keras.io), Theano, compatibl
 main() can be run directly.
 
 ### gradientboosting.py
-ARTEMIS
+This code runs a gradient boosting regression model to predict load values.
+
+Requirements: SKLearn, matplotlib.
+
+main() can be run directly.
 
 ### arima.py
 MEGANE
