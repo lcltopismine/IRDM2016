@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import pyper as pr
 import matplotlib.pylab as plt 
+import processTemp
 from statsmodels.tsa.stattools import adfuller, acf, pacf_ols, pacf
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.arima_model import ARIMA
@@ -15,6 +16,7 @@ rcParams['figure.figsize'] = 15, 6
 #Predicts temperatures from the 2008-07-01 to the 2008-07-07 with arima model
 def arimaTemp(filename):
     
+    processTemp()
     predictions = []
 
     r = pr.R(RCMD="C:\\Program Files\\R\\R-3.1.2\\bin\\R", use_numpy=True, use_pandas=True)
@@ -23,7 +25,7 @@ def arimaTemp(filename):
 
     for j in range(1,12):
 
-        data = pd.read_csv('../data/output/temp_history_processed_station_%s.csv'%j, parse_dates='datetime')  
+        data = pd.read_csv('../data/outputs/temp_history_processed_station_%s.csv'%j, parse_dates='datetime')  
      
         subts = data["value"]
         print 'Predictions for zone %s'%j    
