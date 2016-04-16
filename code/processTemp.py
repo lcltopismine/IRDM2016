@@ -29,5 +29,5 @@ temphistory = temphistory.sort_values(by=['station_id', 'datetime'], ascending=[
 # write out to csv    
 for i in range(1,12):
     subset = temphistory[temphistory.station_id == i]
-    filename = '../data/output/temp_history_processed_station_%s.csv'%i
+    filename = '../data/outputs/temp_history_processed_station_%s.csv'%i
     subset.to_csv(filename)    
