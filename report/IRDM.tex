@@ -195,7 +195,8 @@ Training set error measures:
 Training set 2.2533e-05 0.01824026 0.01375096 -0.000907019 0.3242475 0.1096394 0.001905331
 
 Here, the parameters of the model are p=4, d=1 and q=3 but it is important to note it was not the case for all of the independent time series the algorithm dealt with. If the d was always equal to zero, the value of p and q varied. 
-The following plots represents a subset of the raw data for the given time series in black and the predicted values for the following week in blue. One can see that the first predicted values reflect some of the variation from the actual time series but then the remaining values become linear quickly.
+
+The following plot represents a subset of the raw data for the given time series in black and the predicted values for the following week in blue. One can see that the first predicted values reflect some of the variation from the actual time series but then the remaining values become linear quickly.
 
 \begin{figure}
   \centering
@@ -217,6 +218,84 @@ The second reason why the ARIMA did not work very well might be because the data
 
 
 \subsubsection*{ARIMA for temperature forecasting}
+
+The second try of ARIMA modelling was for the temperatures predictions. In addition to the energy data set, the temperature data set provided hourly temperature measurements for 11 different stations from 2004-01-01 to 2008-06-30 without missing values. This data set was used in other algorithms with the temperatures as features of the value to predict (energy load). One of the weeks for which to predict the energy loads was the one at the end of the data set (2008-07-01 to 2008-07-01). The temperatures for this week were not provided, thus it was necessary to predicted them in order to pass them to our energy loads predictive algorithms.
+
+This time, the implemented ARIMA model dealt with only one time series per zone which was less tedious than for the energy loads model.
+
+The results of the ARIMA modelling were constant across the different zones. As an example are presented the results for the station number 1.
+The following charts represents the raw temperature data with the very clear yearly pattern but no noticeable trend.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.80\textwidth]{TempRawData}
+  \caption{Shows the raw temperature data for station 1 }
+\end{figure}
+
+Then the time series is made stationary with 1st order differencing and log transformation. The results are shown in the following plot.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.80\textwidth]{TempStatData}
+  \caption{Shows the 1st order differenced log transformed temperature data for station 1 }
+\end{figure}
+
+The Dickey-Fuller test was used to check if the transformed series was indeed stationary with following output:
+
+Test Statistic: -33.513700
+p-value: 0.000000
+#Lags Used: 54.000000
+Number of Observations Used: 39358.000000
+Critical Value 5\%:  -2.861613
+Critical Value 1\%: -3.430516
+Critical Value 10\%: -2.566809
+
+The test statistic is smaller than the critical value of 1\% so one can assume that the series is stationary.
+
+On the following charts one can observe the ACF and PACF values of the series. Here as well, several spikes are going out of the insignificant zone which means there is information to exploit for the ARIMA model.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.80\textwidth]{ACFandPACFTempRaw}
+  \caption{Shows the ACF and PACF values for station 1 }
+\end{figure}
+
+Like for the energy loads time series the auto.arima() R function gives the best fit model for the given time series, the summary of this model is the following output:
+
+Series: log10(data) 
+ARIMA(2,1,2)                    
+
+Coefficients:
+         ar1      ar2      ma1     ma2
+      1.7959  -0.8652  -1.5442  0.5978
+s.e.  0.0072   0.0071   0.0128  0.0128
+
+sigma^2 estimated as 0.0002299:  log likelihood=109173.7
+AIC=-218337.4   AICc=-218337.4   BIC=-218294.4
+
+Training set error measures:
+                       ME       RMSE        MAE          MPE     MAPE      MASE       ACF1
+Training set 8.343304e-06 0.01516216 0.01011681 -0.004802065 0.596134 0.1328162 0.03907321
+
+The parameters of the model are p=2, d=1 and q=2.
+
+The following plot represents a subset of the raw data for the given temperature time series in black and the predicted values for the following week in blue. One can see that, just like the predictions of energy loads, the first predicted values reflect some of the variation from the actual data but then the remaining values become linear quickly.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.80\textwidth]{TempPredictions}
+  \caption{Shows predicted values for the week after the end of the data set for station 1 }
+\end{figure}
+
+This last plot shows the ACF and PACF values of the residuals of the ARIMA model. One can see that a lot of spikes are going out of the insignificant zone which means there is information left to extract and that the best fit ARIMA model is not working well.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=0.80\textwidth]{ACFandPACFTempArimaResults}
+  \caption{Shows ACF and PACF values for the ARIMA residuals for station 1 }
+\end{figure}
+
+As it has been said before, maybe the ARIMA did not work very well because the data were too detailed. Indeed, measuring the temperatures hourly over four years produces a lot of information and a lot of white noise which could explain why there was information left in the residuals of the best fit model. This time series might not be a good fit for ARIMA modelling.
 
 \subsection*{Multiple Linear Regression}
 
