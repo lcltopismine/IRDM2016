@@ -120,21 +120,30 @@ The parameter d of the Integrated part of the ARIMA model simply defines the ord
 The Moving Average part of the model defines the number of lagged errors used to predict the next value. If q = 2, its means that to predict a value the model will use the past two errors, i.e, differences between the moving average and the actual value.
 
 \subsubsection*{Design choices}
+Several statistical libraries or packages offer tools to implement ARIMA modelling. However some are more comprehensive than others. For example, in Python, the package \verb~statsmodels.tsa.arima_model~ allows one to create ARIMA modelling but does not have a way to find the parameters (p,d,q) of the best fit model automatically. The package \verb~forecast~ in R however does provide this possibility with the \verb~auto.arima()~ function.
 
-Several statistical libraries or packages offer tools to implement ARIMA modelling. However some are more comprehensive than others. For example in Python, the package statsmodels.tsa.arima_model allows one to create ARIMA modelling but does not have a way to find the parameters (p,d,q) of the best fit model automatically. The package “forecast” in R however does provide this possibility with the auto.arima() function. 
-In our team, none of us were very familiar with R so we decided to use python for the overall implementation and to use an R package (PypeR) to still benefit from R additional capabilities. 
+In our team, none of us were very familiar with R so we decided to use python for the overall implementation and to use an R package (PypeR) to still benefit from R additional capabilities.
+
 In order to check the stationarity of the time series we used the Dickey-Fuller test where the null hypothesis is that the time series is non-stationary. If the test result is below the critical value we can reject the null hypothesis and say the time series is stationary and suitable for ARIMA modelling.
-Checking the effectiveness of the ARIMA models was done by plotting and analysing the ACF (Auto Correlation Fuction) and PACF (Partial Auto Correlation Function) of both the differenced and log transformed data and then the ARIMA output. 
+
+Checking the effectiveness of the ARIMA models was done by plotting and analysing the ACF (Auto Correlation Fuction) and PACF (Partial Auto Correlation Function) of both the differenced and log transformed data and then the ARIMA output.
+
 The ACF plot represents the correlation coefficient between a time series and lags of itself. For instance, by looking at an ACF plot, one can know if for any data point Yt of the serie, Yt is correlated with Yt-1, Yt-2 and so on.
-The PACF plot represents the part of the correlation between two data point Yt and Yt-n that is not explained by their mutual correlation with the Yt-1 to Yt-n+1. 
+
+The PACF plot represents the part of the correlation between two data point Yt and Yt-n that is not explained by their mutual correlation with the Yt-1 to Yt-n+1.
+
 By differencing and log transforming the raw data and plot ACF and PACF one can see if there is still some correlation left in the residuals that would be removed by using ARIMA. Plotting the ACF and PACF on the ARIMA results allows to check that there is no more correlation in the residuals and that the ARIMA model is working well.
+
 During this project, ARIMA was used for two purposes: predict the missing energy load values and predict the missing temperature values in order to use them as features in other prediction algorithms. 
 
 \subsubsection*{ARIMA for loads forecasting}
 
 At first, it was decided to try implementing ARIMA modelling directly on the energy loads time series to predict the missing values. 
+
 However, since the energy loads dataset contains hourly data from 2004-01-01 to 2008-06-30 for 20 different zones in the United States, each of this zone needed to be treated as an independent time series. Moreover, within that time range, 8 separate weeks of data were missing for each zone and needed to be forecasted as well as the week following the last data point of the set.
+
 Most of ARIMA modelling implementation usually assume that there is no missing data within the time range of the given time series. Since the energy loads data sets was missing 8 weeks, it required modelling every range of data in between those missing weeks as an independent time series as well.
+
 As a result, the implemented ARIMA algorithm dealt with 9 independent time series for each zone, thus, 180 time series in total.
 
 Although the implemented algorithm dealt with a lot of independent time series, the results were constant over them. In the following are shown results for the time series from 2004-01-01 to 2005-03-06.
@@ -155,7 +164,7 @@ The next plot represents the 1st order differenced log transformed data. This ti
 \end{figure}
 
 In order to confirm that the series is stationary, the algorithm runs the Dickey-Fuller test. The output is the following:
-
+\begin{verbatim}
 Results of Dickey-Fuller Test:
 Test Statistic: -1.154495e+01
 p-value: 3.559772e-21
@@ -164,6 +173,7 @@ Number of Observations Used: 10279.000000
 Critical Value 5\%: -2.861821
 Critical Value 1\%:  -3.430986
 Critical Value 10\%: -2.566920
+\end{verbatim}
 
 The test statistic is smaller than the critical value of 1\% which means the rejection of the non-stationarity hypothesis has less than 1\% chance to be wrong. One can conclude with confidence that the time series is stationary.
 
@@ -178,7 +188,7 @@ One could also notice the daily seasonality represented by the spikes at lag 24 
 
 By using the auto.arima() function provided by R, the algorithm finds and uses the best ARIMA model for the given time series, i.e, the parameter order that provides the lowest Bayesian information criterion (BIC).
 In R, one can obtain a summary of the best ARIMA model. In this case, the output was the following:
-
+\begin{verbatim}
 Series: log10(data) 
 ARIMA(4,1,3)                    
 
@@ -191,8 +201,11 @@ sigma^2 estimated as 0.000333:  log likelihood=26612.67
 AIC=-53209.33   AICc=-53209.32   BIC=-53151.42
 
 Training set error measures:
-                     ME       RMSE        MAE          MPE      MAPE      MASE        ACF1
-Training set 2.2533e-05 0.01824026 0.01375096 -0.000907019 0.3242475 0.1096394 0.001905331
+             ME         RMSE       MAE        MPE          MAPE      
+Training set 2.2533e-05 0.01824026 0.01375096 -0.000907019 0.3242475
+MASE      ACF1
+0.1096394 0.001905331
+\end{verbatim}
 
 Here, the parameters of the model are p=4, d=1 and q=3 but it is important to note it was not the case for all of the independent time series the algorithm dealt with. If the d was always equal to zero, the value of p and q varied. 
 
@@ -241,7 +254,7 @@ Then the time series is made stationary with 1st order differencing and log tran
 \end{figure}
 
 The Dickey-Fuller test was used to check if the transformed series was indeed stationary with following output:
-
+\begin{verbatim}
 Test Statistic: -33.513700
 p-value: 0.000000
 #Lags Used: 54.000000
@@ -249,6 +262,7 @@ Number of Observations Used: 39358.000000
 Critical Value 5\%:  -2.861613
 Critical Value 1\%: -3.430516
 Critical Value 10\%: -2.566809
+\end{verbatim}
 
 The test statistic is smaller than the critical value of 1\% so one can assume that the series is stationary.
 
@@ -262,6 +276,7 @@ On the following charts one can observe the ACF and PACF values of the series. H
 
 Like for the energy loads time series the auto.arima() R function gives the best fit model for the given time series, the summary of this model is the following output:
 
+\begin{verbatim}
 Series: log10(data) 
 ARIMA(2,1,2)                    
 
@@ -274,8 +289,11 @@ sigma^2 estimated as 0.0002299:  log likelihood=109173.7
 AIC=-218337.4   AICc=-218337.4   BIC=-218294.4
 
 Training set error measures:
-                       ME       RMSE        MAE          MPE     MAPE      MASE       ACF1
-Training set 8.343304e-06 0.01516216 0.01011681 -0.004802065 0.596134 0.1328162 0.03907321
+             ME           RMSE       MAE        MPE          MAPE
+Training set 8.343304e-06 0.01516216 0.01011681 -0.004802065 0.596134
+MASE      ACF1
+0.1328162 0.03907321
+\end{verbatim}
 
 The parameters of the model are p=2, d=1 and q=2.
 
@@ -327,7 +345,7 @@ In our approach, a set of features was introduced to the gradient boosting regre
 \section*{References}
 \url{https://www.kaggle.com}
 
-\url{https://www.kaggle.com/c/global-energy-forecasting-competition-2012-load-forecasting}
+%\url{https://www.kaggle.com/c/global-energy-forecasting-competition-2012-load-forecasting}
 
 Chatfield, Chris. Time-series forecasting. CRC Press, 2000.
 
