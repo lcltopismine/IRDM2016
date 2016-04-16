@@ -72,6 +72,10 @@ In developing this work, we embraced the same constraints on data use imposed up
 \end{itemize}
 The task is to generate estimates of electricity load in each zone, and for the region as a whole, for eight hold out weeks within the period.  Additionally, forecasts are required for the week 1 July 2008 to 7 July 2008, for which no temperature readings are available.
 
+\section*{Temperatures forecasting}
+In this project, most of the implemented models, use the values provided in the temperature dataset as features for predicting energy loads values. However, the last week of temperature values is missing (2008-07-01 to 2008-07-01). Therefore, predicting the values for this week was a critical challenge for the results would impact the quality of the results provided by the implemented models.
+Teams that took part in the Kaggle competition usually, used naive techniques for forecasting temperature values such as taking the average of the previous values. In this project, it was decided to use ARIMA modelling to forecast the missing temperatures. This approach represents an improvement from what has been done in the Kaggle competition and was one of the challenges to overcome.
+
 \section*{Consideration of feature selection}
 Before determining the features of the model and after performing data cleansing and editing, it is essential to create and examine the time plot of the data. The time plot can show the behavior of the data and reveal important features such as seasonal variation and trend which is defined as “an increasing normal number assigned to each observation in chronological order”.
 
