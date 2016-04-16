@@ -73,14 +73,14 @@ In developing this work, we embraced the same constraints on data use imposed up
 The task is to generate estimates of electricity load in each zone, and for the region as a whole, for eight hold out weeks within the period.  Additionally, forecasts are required for the week 1 July 2008 to 7 July 2008, for which no temperature readings are available.
 
 \section*{Temperatures forecasting}
-In this project, most of the implemented models, use the values provided in the temperature dataset as features for predicting energy loads values. However, the last week of temperature values is missing (2008-07-01 to 2008-07-01). Therefore, predicting the values for this week was a critical challenge for the results would impact the quality of the results provided by the implemented models.
-Teams that took part in the Kaggle competition usually, used naive techniques for forecasting temperature values such as taking the average of the previous values. In this project, it was decided to use ARIMA modelling to forecast the missing temperatures. This approach represents an improvement from what has been done in the Kaggle competition and was one of the challenges to overcome.
+In this project, most of the implemented models, use the values provided in the temperature dataset as features for predicting energy loads values. However, the last week of temperature values is missing (2008-07-01 to 2008-07-07). Therefore, predicting the values for this week was a critical challenge for the results would impact the quality of the results provided by the implemented models.
+Teams that took part in the Kaggle competition usually used naive techniques for forecasting temperature values such as taking the average of the previous values at the same time of year. In this project, we also explored use of ARIMA modelling to forecast the missing temperatures. This approach represents an improvement from what has been done in the Kaggle competition and was one of the challenges to overcome.
 
 \section*{Consideration of feature selection}
 Before determining the features of the model and after performing data cleansing and editing, it is essential to create and examine the time plot of the data. The time plot can show the behavior of the data and reveal important features such as seasonal variation and trend which is defined as “an increasing normal number assigned to each observation in chronological order”.
 
 In our case the time plot showed various fluctuations with an annual seasonality which led us to develop a set that combines several features; trend, hour with 24 levels (representing the hours of a day), weekday with seven levels (representing the days of a week), month with 12 levels (representing the months of a year), temperature of the current hour, temperature of the current hour and cubic temperature of the current hour. In addition to those main features, interaction between them was taken into account forming several cross effects; weekday$\times$hour, temperature$\times$month, temperature$^2$$\times$month, temperature$^3$$\times$month, temperature$\times$hour, temperature$^2$$\times$hour and temperature$^3$$\times$hour. After measuring the feature importance, we plotted the results as shown in Figure \ref{fig:var_imp}.
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{variable_importance}
   \caption{Shows the feature importance measurements over the features}
@@ -149,7 +149,7 @@ As a result, the implemented ARIMA algorithm dealt with 9 independent time serie
 Although the implemented algorithm dealt with a lot of independent time series, the results were constant over them. In the following are shown results for the time series from 2004-01-01 to 2005-03-06.
 The following plot represents the raw time series that does not look stationary, if the overall trend is difficult to identify, there are clearly some patterns present.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{loadsRawData}
   \caption{Shows the raw data for the first date range of zone 1 }
@@ -157,7 +157,7 @@ The following plot represents the raw time series that does not look stationary,
 
 The next plot represents the 1st order differenced log transformed data. This time, the series looks much more stationary. 
 
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{LoadsStationary}
   \caption{Shows the 1st order differenced log transformed data for the first date range of zone 1 }
@@ -180,7 +180,7 @@ The test statistic is smaller than the critical value of 1\% which means the rej
 The following charts, show the ACF and PACF values of the time series. Both plots show a lot of spikes going out of the insignificant zone represented by the dotted horizontal lines. It means that the time series residuals has some information left to be extracted by the ARIMA model.
 One could also notice the daily seasonality represented by the spikes at lag 24 (24 hours seasonality).
 
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{ACFandPACFLoadsRaw}
   \caption{Shows the ACF and PACF values for the differenced log transformed data for the first date range of zone 1 }
@@ -211,7 +211,7 @@ Here, the parameters of the model are p=4, d=1 and q=3 but it is important to no
 
 The following plot represents a subset of the raw data for the given time series in black and the predicted values for the following week in blue. One can see that the first predicted values reflect some of the variation from the actual time series but then the remaining values become linear quickly.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{LoadsPred}
   \caption{Shows predicted values for the week after for the first date range of zone 1 }
@@ -219,7 +219,7 @@ The following plot represents a subset of the raw data for the given time series
 
 If one plots the ACF and PACF of our best fit ARIMA model, one can see that although the spikes are less pronounced, some of them are still out of the insignificant zone which means that there is still information left in the residuals and explains why the model does not produce very good results.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{ACFandPACFLoadsArimaResults}
   \caption{Shows ACF and PACF values for the ARIMA residuals for the first date range of zone 1 }
@@ -239,7 +239,7 @@ This time, the implemented ARIMA model dealt with only one time series per zone 
 The results of the ARIMA modelling were constant across the different zones. As an example are presented the results for the station number 1.
 The following charts represents the raw temperature data with the very clear yearly pattern but no noticeable trend.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{TempRawData}
   \caption{Shows the raw temperature data for station 1 }
@@ -247,7 +247,7 @@ The following charts represents the raw temperature data with the very clear yea
 
 Then the time series is made stationary with 1st order differencing and log transformation. The results are shown in the following plot.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{TempStatData}
   \caption{Shows the 1st order differenced log transformed temperature data for station 1 }
@@ -268,7 +268,7 @@ The test statistic is smaller than the critical value of 1\% so one can assume t
 
 On the following charts one can observe the ACF and PACF values of the series. Here as well, several spikes are going out of the insignificant zone which means there is information to exploit for the ARIMA model.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{ACFandPACFTempRaw}
   \caption{Shows the ACF and PACF values for station 1 }
@@ -299,7 +299,7 @@ The parameters of the model are p=2, d=1 and q=2.
 
 The following plot represents a subset of the raw data for the given temperature time series in black and the predicted values for the following week in blue. One can see that, just like the predictions of energy loads, the first predicted values reflect some of the variation from the actual data but then the remaining values become linear quickly.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{TempPredictions}
   \caption{Shows predicted values for the week after the end of the data set for station 1 }
@@ -307,7 +307,7 @@ The following plot represents a subset of the raw data for the given temperature
 
 This last plot shows the ACF and PACF values of the residuals of the ARIMA model. One can see that a lot of spikes are going out of the insignificant zone which means there is information left to extract and that the best fit ARIMA model is not working well.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{ACFandPACFTempArimaResults}
   \caption{Shows ACF and PACF values for the ARIMA residuals for station 1 }
@@ -316,18 +316,32 @@ This last plot shows the ACF and PACF values of the residuals of the ARIMA model
 As it has been said before, maybe the ARIMA did not work very well because the data were too detailed. Indeed, measuring the temperatures hourly over four years produces a lot of information and a lot of white noise which could explain why there was information left in the residuals of the best fit model. This time series might not be a good fit for ARIMA modelling.
 
 \subsection*{Multiple Linear Regression}
+Multiple Linear Regression is a technique which finds the best fitting linear relationship between several input variables and a scalar output variable - in this case Electricity Load.  The best fit is determined as that linear combination of candidate features which minimises the Mean Square Error between predictions and true values.
+
+As has been seen earlier, there is clearly not a direct linear relationship between the raw available inputs and electricity load.  We  introduced non-linear elements by construction of polynomial and cross-features, and allow these features to be combined in the regression model.
+
+\subsubsection*{Design approach}
+We replicated the Benchmark model[REF] proposed by Tao Hong as convener of the Kaggle competition.  The inclusion of 3rd ordered polynomial terms for temperature captures the non-linear relationship between load and temperature.  One-hot terms are introduced to capture the seasonal elements of the time series - cycles of variation are observed over daily, weekly and yearly periods - captured by the Hour (of day), Day (of week) and Month (of year) terms.
+
+\begin{align*}
+Y &= \beta_0 + \beta_1 \times Trend + \beta_2 \times Day \times Hour + \beta_3 \times Month \\
+&+ \beta_4 \times Month \times T + \beta_5 \times Month \times T^2 + \beta_6 \times Month \times T^3 \\
+&+ \beta_7 \times Hour \times T + \beta_8 \times Hour \times T^2 + \beta_9 \times Hour \times T^3 
+\end{align*}
+
+
 
 \subsection*{Gradient Boosting}
 Gradient Boosting is an ensemble learning method which builds additive regression models in a forward stage-wise manner. In each stage it fits a parameterised base learner to the gradient of the loss function which decreases in regard to the model values of every training sample. Gradient boosting can handle and process various data types and many different features. The factor of randomisation of gradient boosting also improves its accuracy and execution speed. Moreover, through its robust loss functions it can eliminate noise by removing outliers and thus, prevent the training model from overfitting to the data samples.
 
 In our approach, a set of features was introduced to the gradient boosting regression model in order to best fit the data. The features are composed by the month (1-12), weekday (1-7), hour (1-24), summer (true-false), trend, holiday falling and the temperature measurements of each of the 11 temperature stations. After training the model the root mean squared error of the testing was generated and was approximately equal to 76676 whilst its weighted root mean squared error was approximately equivalent to 112081. Finally, the error of the training set and test set was computed at each iteration and can be summarised in Figure \ref{fig:deviance}, whilst the importance of all features was measured and can be observed in Figure \ref{fig:boost_imp}.
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{deviance}
   \caption{Shows the deviance of the training and test set in gradient boosting}
   \label{fig:deviance}
 \end{figure}
-\begin{figure}
+\begin{figure}[H]
   \centering
     \includegraphics[width=0.80\textwidth]{boost_imp}
   \caption{Shows the feature importance measurements over the features in gradient boosting}
