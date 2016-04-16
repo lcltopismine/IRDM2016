@@ -14,7 +14,7 @@ from wrmse import WRMSE
 
 def main():
     print 'import data and create features'
-    train_data, test_data = get_data()
+    train_data, test_data = get_data(temp_estimate_source='historic')
 
     X_raw = selectdata(train_data)
     X_test_raw = selectdata(test_data)
@@ -72,7 +72,7 @@ def main():
     zoneresults = test_data[['datetime', 'zone_id', 'weight', 'value']].copy()
     zoneresults['prediction'] = y_test_pred
 
-    wrmse = WRMSE(zoneresults, saveresults=True, modelname='nn')
+    wrmse = WRMSE(zoneresults, saveresults=True, modelname='nnactuals')
     print 'Weighted Root Mean Square Error (including system level), test: %.5f' % wrmse
 
 

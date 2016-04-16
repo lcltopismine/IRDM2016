@@ -17,7 +17,7 @@ from wrmse import WRMSE
 
 def main():
     print 'import data and create features'
-    train_data, test_data = get_data()
+    train_data, test_data = get_data(temp_estimate_source='historic')
 
     # counts of zones and temperature stations - for looping
     zones = 20
@@ -143,13 +143,14 @@ def main():
         y_test_pred = pipe.predict(X_test)
         zoneresults.loc[zoneresults.zone_id == zone, 'prediction'] = y_test_pred
 
+        score_train = pipe.score(X_train, y_train)
         score_test = pipe.score(X_test, y_test)
 
-        print 'zone = %2i  tempstn = %2i  test R2 = %0.5f' % (zone, tempstn, score_test)
+        print 'zone = %2i  tempstn = %2i  train R2 = %0.5f  test R2 = %0.5f' % (zone, best_tempstn_for_zone[zone], score_train, score_test)
 
     # calculate performance [calling wrmse also saves results]
     rmse = mean_squared_error(zoneresults.value, zoneresults.prediction)**0.5
-    wrsme = WRMSE(zoneresults, saveresults=True, modelname='benchmark')
+    wrsme = WRMSE(zoneresults, saveresults=True, modelname='benchmarkhistoric')
     print 'Root Mean Square Error (zone level only), test: %.5f' % rmse
     print 'Weighted Root Mean Square Error (including system level), test: %.5f' % wrsme
 
